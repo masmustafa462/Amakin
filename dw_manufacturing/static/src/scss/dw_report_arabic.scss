@@ -1,0 +1,93 @@
+/* Arabic ready styling for the Metal Fabrication PDF reports.
+   The Amiri font (SIL OFL 1.1) is shipped with the module so the reports render
+   correctly on any server, with or without Arabic fonts installed system wide. */
+
+@font-face {
+    font-family: "DwArabic";
+    font-style: normal;
+    font-weight: 400;
+    src: url("/dw_manufacturing/static/src/fonts/Amiri-Regular.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "DwArabic";
+    font-style: normal;
+    font-weight: 700;
+    src: url("/dw_manufacturing/static/src/fonts/Amiri-Bold.ttf") format("truetype");
+}
+
+.dw-report {
+    font-family: "DwArabic", "Amiri", "Noto Naskh Arabic", "DejaVu Sans", sans-serif;
+    font-size: 12px;
+    line-height: 1.6;
+
+    h1, h2, h3, h4 {
+        font-family: "DwArabic", "Amiri", "Noto Naskh Arabic", "DejaVu Sans", sans-serif;
+        font-weight: 700;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 12px;
+    }
+
+    table th,
+    table td {
+        border: 1px solid #b0b0b0;
+        padding: 4px 6px;
+        vertical-align: middle;
+    }
+
+    table thead th {
+        background-color: #eeeeee;
+        font-weight: 700;
+    }
+
+    .dw-title {
+        text-align: center;
+        margin-bottom: 4px;
+    }
+
+    .dw-subtitle {
+        text-align: center;
+        color: #555555;
+        margin-bottom: 12px;
+    }
+
+    .dw-total-row td {
+        font-weight: 700;
+        background-color: #f5f5f5;
+    }
+
+    .dw-positive { color: #1a7f37; }
+    .dw-negative { color: #b42318; }
+
+    .dw-meta td {
+        border: none;
+        padding: 2px 6px;
+    }
+
+    /* Numbers stay left to right even inside a right to left document. */
+    .dw-num {
+        direction: ltr;
+        unicode-bidi: embed;
+        text-align: right;
+        white-space: nowrap;
+    }
+}
+
+/* Right to left layout: applied when the report is printed in Arabic. */
+.dw-report.dw-rtl {
+    direction: rtl;
+    text-align: right;
+
+    table th,
+    table td {
+        text-align: right;
+    }
+
+    .dw-num {
+        text-align: left;
+    }
+}

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_custody_category_tree" model="ir.ui.view">
+        <field name="name">employee.custody.category.tree</field>
+        <field name="model">employee.custody.category</field>
+        <field name="arch" type="xml">
+            <list string="تصنيفات العهد">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="parent_id"/>
+                <field name="type_count"/>
+                <field name="company_id" optional="hide" groups="base.group_multi_company"/>
+                <field name="active" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_custody_category_form" model="ir.ui.view">
+        <field name="name">employee.custody.category.form</field>
+        <field name="model">employee.custody.category</field>
+        <field name="arch" type="xml">
+            <form string="تصنيف العهد">
+                <sheet>
+                    <!-- Odoo 19 dropped the "boolean_button" field widget, so the
+                         archive stat button is replaced by the standard ribbon
+                         pattern used across core 19. Archiving itself is
+                         unchanged and stays available from the Actions menu. -->
+                    <widget name="web_ribbon" title="مؤرشف" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="parent_id"/>
+                            <field name="sequence"/>
+                        </group>
+                        <group>
+                            <field name="color" widget="color_picker"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <field name="description" placeholder="الوصف"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_custody_category" model="ir.actions.act_window">
+        <field name="name">تصنيفات العهد</field>
+        <field name="res_model">employee.custody.category</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

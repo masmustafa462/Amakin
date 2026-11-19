@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="dw_item_report_document">
+        <t t-call="web.external_layout">
+            <t t-set="doc" t-value="o.with_context(lang=lang)"/>
+            <div class="page">
+                <t t-call="dw_manufacturing.dw_report_wrapper">
+                    <h2 class="dw-title">Manufacturing Item</h2>
+                    <div class="dw-subtitle"><span t-field="doc.name"/></div>
+
+                    <table>
+                        <tr>
+                            <th style="width:25%;">Customer</th>
+                            <td style="width:25%;"><span t-field="doc.partner_id"/></td>
+                            <th style="width:25%;">Project</th>
+                            <td style="width:25%;"><span t-field="doc.project_id"/></td>
+                        </tr>
+                        <tr>
+                            <th>Sales Order</th>
+                            <td><span t-field="doc.sale_order_id"/></td>
+                            <th>Product Family</th>
+                            <td><span t-field="doc.family_id"/></td>
+                        </tr>
+                        <tr>
+                            <th>Finished Product</th>
+                            <td><span t-field="doc.finished_product_id"/></td>
+                            <th>Count</th>
+                            <td class="dw-num"><span t-field="doc.quantity"/></td>
+                        </tr>
+                        <tr>
+                            <th>Drawing</th>
+                            <td><span t-field="doc.drawing_number"/></td>
+                            <th>Revision</th>
+                            <td><span t-field="doc.drawing_revision_number"/></td>
+                        </tr>
+                        <tr>
+                            <th>Metal</th>
+                            <td><span t-field="doc.metal_type_id"/> <span t-field="doc.metal_grade_id"/></td>
+                            <th>Finish</th>
+                            <td><span t-field="doc.finish_type_id"/> <span t-field="doc.color"/></td>
+                        </tr>
+                    </table>
+
+                    <h3>Dimensions</h3>
+                    <table>
+                        <tr>
+                            <th>Length (mm)</th><td class="dw-num"><span t-field="doc.length_mm"/></td>
+                            <th>Width (mm)</th><td class="dw-num"><span t-field="doc.width_mm"/></td>
+                            <th>Height (mm)</th><td class="dw-num"><span t-field="doc.height_mm"/></td>
+                        </tr>
+                        <tr>
+                            <th>Thickness (mm)</th><td class="dw-num"><span t-field="doc.thickness_mm"/></td>
+                            <th>Diameter (mm)</th><td class="dw-num"><span t-field="doc.diameter_mm"/></td>
+                            <th>Area (m2)</th><td class="dw-num"><span t-field="doc.area_m2"/></td>
+                        </tr>
+                        <tr>
+                            <th>Perimeter (m)</th><td class="dw-num"><span t-field="doc.perimeter_m"/></td>
+                            <th>Total Length (m)</th><td class="dw-num"><span t-field="doc.total_length_m"/></td>
+                            <th>Theoretical Weight (kg)</th><td class="dw-num"><span t-field="doc.theoretical_weight_kg"/></td>
+                        </tr>
+                        <tr t-if="doc.step_count">
+                            <th>Steps</th><td class="dw-num"><span t-field="doc.step_count"/></td>
+                            <th>Total Rise (mm)</th><td class="dw-num"><span t-field="doc.total_rise_mm"/></td>
+                            <th>Angle (deg)</th><td class="dw-num"><span t-field="doc.stair_angle_deg"/></td>
+                        </tr>
+                        <tr t-if="doc.post_count">
+                            <th>Posts</th><td class="dw-num"><span t-field="doc.post_count"/></td>
+                            <th>Sections</th><td class="dw-num"><span t-field="doc.section_count"/></td>
+                            <th>Spacing (mm)</th><td class="dw-num"><span t-field="doc.post_spacing_mm"/></td>
+                        </tr>
+                    </table>
+
+                    <h3>Components</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Kind</th>
+                                <th class="dw-num">Qty per Unit</th>
+                                <th>UoM</th>
+                                <th class="dw-num">Total Qty</th>
+                                <th class="dw-num">Weight (kg)</th>
+                                <th class="dw-num">Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="doc.component_line_ids" t-as="line">
+                                <td><span t-field="line.product_id"/></td>
+                                <td><span t-field="line.component_kind"/></td>
+                                <td class="dw-num"><span t-field="line.qty_per_unit"/></td>
+                                <td><span t-field="line.uom_id"/></td>
+                                <td class="dw-num"><span t-field="line.total_qty"/></td>
+                                <td class="dw-num"><span t-field="line.theoretical_weight_kg"/></td>
+                                <td class="dw-num">
+                                    <span t-field="line.estimated_total_cost"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                            <tr class="dw-total-row">
+                                <td colspan="6">Material Total</td>
+                                <td class="dw-num">
+                                    <span t-field="doc.material_cost"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 t-if="doc.operation_line_ids">Operations</h3>
+                    <table t-if="doc.operation_line_ids">
+                        <thead>
+                            <tr>
+                                <th>Operation</th>
+                                <th>Work Center</th>
+                                <th class="dw-num">Planned Minutes</th>
+                                <th class="dw-num">Labour</th>
+                                <th class="dw-num">Machine</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="doc.operation_line_ids" t-as="op">
+                                <td><span t-field="op.operation_type_id"/></td>
+                                <td><span t-field="op.workcenter_id"/></td>
+                                <td class="dw-num"><span t-field="op.planned_minutes"/></td>
+                                <td class="dw-num">
+                                    <span t-field="op.labor_cost"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                                <td class="dw-num">
+                                    <span t-field="op.machine_cost"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Cost and Price</h3>
+                    <table>
+                        <tr>
+                            <th>Material</th>
+                            <td class="dw-num"><span t-field="doc.material_cost" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                            <th>Labour</th>
+                            <td class="dw-num"><span t-field="doc.labor_cost" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                        </tr>
+                        <tr>
+                            <th>Machine</th>
+                            <td class="dw-num"><span t-field="doc.machine_cost" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                            <th>Outsourcing</th>
+                            <td class="dw-num"><span t-field="doc.subcontract_cost" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                        </tr>
+                        <tr>
+                            <th>Overhead</th>
+                            <td class="dw-num"><span t-field="doc.overhead_cost" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                            <th>Estimated Cost</th>
+                            <td class="dw-num"><span t-field="doc.estimated_cost" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                        </tr>
+                        <tr class="dw-total-row">
+                            <th>Unit Price</th>
+                            <td class="dw-num"><span t-field="doc.selling_price_unit" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                            <th>Expected Revenue</th>
+                            <td class="dw-num"><span t-field="doc.expected_revenue" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></td>
+                        </tr>
+                    </table>
+
+                    <div t-if="doc.manufacturing_instructions">
+                        <h3>Manufacturing Instructions</h3>
+                        <div t-field="doc.manufacturing_instructions"/>
+                    </div>
+                    <div t-if="doc.note">
+                        <h3>Notes</h3>
+                        <div t-field="doc.note"/>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="dw_item_report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="o.partner_id.lang or user.lang or 'en_US'"/>
+                <t t-call="dw_manufacturing.dw_item_report_document"/>
+            </t>
+        </t>
+    </template>
+</odoo>

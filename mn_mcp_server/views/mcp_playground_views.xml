@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Full page, not a dialog. The playground is a workbench: you read a
+         JSON result, edit the arguments, and run it again. A modal squeezes
+         the result into a box too small to read and closes on a stray click.
+
+         No `widget="ace"` either. It renders as a collapsed strip inside a
+         form column, and a JSON blob in a plain monospace textarea is more
+         legible than a broken editor. -->
+    <record id="view_mcp_playground_form" model="ir.ui.view">
+        <field name="name">mn.mcp.playground.form</field>
+        <field name="model">mn.mcp.playground</field>
+        <field name="arch" type="xml">
+            <form string="MCP Playground" create="false">
+                <header>
+                    <button name="action_run" type="object" string="Run call"
+                            class="btn-primary"/>
+                    <field name="status" widget="statusbar" readonly="1"
+                           invisible="not status"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>MCP Playground</h1>
+                        <div class="text-muted">
+                            The real dispatch, as the key's user, with the guard
+                            rails on. What you see here is what your AI client sees.
+                        </div>
+                    </div>
+                    <group>
+                        <group string="Run as">
+                            <field name="api_key_id" options="{'no_create': True}"/>
+                            <field name="key_user_id"/>
+                            <field name="key_models" string="Allowed models"/>
+                        </group>
+                        <group string="Call">
+                            <field name="method"/>
+                            <field name="protocol_version"/>
+                            <field name="latency_ms" string="Latency (ms)"
+                                   invisible="not latency_ms"/>
+                        </group>
+                    </group>
+
+                    <group invisible="method != 'tools/call'">
+                        <group>
+                            <field name="tool_id" options="{'no_create': True}"
+                                   placeholder="Pick one to fill in the arguments"/>
+                            <field name="tool_name" placeholder="odoo_search_read"/>
+                        </group>
+                    </group>
+
+                    <group invisible="method != 'resources/read'">
+                        <field name="uri" placeholder="odoo://model/res.partner"/>
+                    </group>
+
+                    <group invisible="method != 'prompts/get'">
+                        <field name="prompt_name"/>
+                    </group>
+
+                    <notebook>
+                        <page string="Arguments" name="arguments"
+                              invisible="method not in ('tools/call', 'prompts/get')">
+                            <field name="arguments" nolabel="1"
+                                   class="font-monospace"
+                                   placeholder='{"model": "res.partner", "limit": 5}'/>
+                        </page>
+                        <page string="Result" name="result" invisible="not result">
+                            <field name="result" nolabel="1" readonly="1"
+                                   class="font-monospace"/>
+                        </page>
+                        <page string="Same call as curl" name="curl">
+                            <field name="curl_command" nolabel="1" readonly="1"
+                                   class="font-monospace"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mcp_playground" model="ir.actions.server">
+        <field name="name">Playground</field>
+        <field name="model_id" ref="model_mn_mcp_tool_choice"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_playground()</field>
+    </record>
+
+    <record id="view_mcp_tool_choice_list" model="ir.ui.view">
+        <field name="name">mn.mcp.tool.choice.list</field>
+        <field name="model">mn.mcp.tool.choice</field>
+        <field name="arch" type="xml">
+            <list string="Tools exposed" create="false" edit="false">
+                <field name="name"/>
+                <field name="kind"/>
+                <field name="read_only" string="Read only"/>
+                <field name="description"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_mcp_tool_choice" model="ir.actions.act_window">
+        <field name="name">Exposed Tools</field>
+        <field name="res_model">mn.mcp.tool.choice</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing mirrored yet</p>
+            <p>Open the Playground once — it refreshes this list from the live
+               tool catalogue.</p>
+        </field>
+    </record>
+
+</odoo>

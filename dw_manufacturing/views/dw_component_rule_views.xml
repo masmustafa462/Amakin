@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dw_component_rule_view_form" model="ir.ui.view">
+        <field name="name">dw.component.rule.form</field>
+        <field name="model">dw.component.rule</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Frame tube per perimeter"/></h1>
+                    </div>
+                    <group>
+                        <group string="Scope">
+                            <field name="family_id"/>
+                            <field name="finished_product_tmpl_id"/>
+                            <field name="opening_type" invisible="family_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="sequence"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Component">
+                            <field name="component_product_id"/>
+                            <field name="component_kind"/>
+                            <field name="uom_id"/>
+                            <field name="operation_type_id"/>
+                        </group>
+                    </group>
+                    <group string="Quantity Calculation">
+                        <group>
+                            <field name="calc_method" widget="radio"/>
+                            <field name="basis" invisible="calc_method != 'variable'"/>
+                            <field name="factor" invisible="calc_method != 'variable' or basis == 'fixed'"/>
+                            <field name="fixed_qty" invisible="calc_method == 'formula' and basis != 'fixed'"/>
+                        </group>
+                        <group>
+                            <field name="formula_preview" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Guided Formula" name="formula" invisible="calc_method != 'formula'">
+                            <div class="alert alert-info" role="alert">
+                                Terms are applied strictly top to bottom. The operator of the first
+                                term is ignored. Only the variables listed here can be used - no
+                                Python expression is ever evaluated.
+                            </div>
+                            <field name="term_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="operator"/>
+                                    <field name="operand_type"/>
+                                    <field name="variable" invisible="operand_type != 'variable'"/>
+                                    <field name="constant_value" invisible="operand_type != 'constant'"/>
+                                    <field name="note" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Post Processing" name="post">
+                            <group>
+                                <group string="Adjustments">
+                                    <field name="extra_qty"/>
+                                    <field name="conversion_factor"/>
+                                    <field name="waste_percent"/>
+                                    <field name="min_qty"/>
+                                </group>
+                                <group string="Rounding">
+                                    <field name="round_mode"/>
+                                    <field name="rounding_multiple"/>
+                                    <field name="round_commercial"/>
+                                    <field name="commercial_length_m" invisible="not round_commercial"/>
+                                    <field name="commercial_output" invisible="not round_commercial"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Conditions" name="conditions">
+                            <div class="text-muted">
+                                The rule only produces a component when every condition is true.
+                            </div>
+                            <field name="condition_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="variable"/>
+                                    <field name="operator"/>
+                                    <field name="value"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note" placeholder="Technical note or reason for this rule..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="dw_component_rule_view_list" model="ir.ui.view">
+        <field name="name">dw.component.rule.list</field>
+        <field name="model">dw.component.rule</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="family_id"/>
+                <field name="finished_product_tmpl_id" optional="hide"/>
+                <field name="component_product_id"/>
+                <field name="component_kind"/>
+                <field name="calc_method"/>
+                <field name="formula_preview"/>
+                <field name="waste_percent"/>
+                <field name="round_mode" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="active" widget="boolean_toggle" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_component_rule_view_search" model="ir.ui.view">
+        <field name="name">dw.component.rule.search</field>
+        <field name="model">dw.component.rule</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="family_id"/>
+                <field name="component_product_id"/>
+                <field name="finished_product_tmpl_id"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <filter string="Legacy Rules" name="legacy" domain="[('family_id', '=', False)]"/>
+                <group>
+                    <filter string="Product Family" name="group_family" context="{'group_by': 'family_id'}"/>
+                    <filter string="Component Kind" name="group_kind" context="{'group_by': 'component_kind'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="dw_component_rule_action" model="ir.actions.act_window">
+        <field name="name">Component Rules</field>
+        <field name="res_model">dw.component.rule</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

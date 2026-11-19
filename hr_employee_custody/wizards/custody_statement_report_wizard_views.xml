@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_custody_statement_report_wizard_form"
+            model="ir.ui.view">
+        <field name="name">custody.statement.report.wizard.form</field>
+        <field name="model">custody.statement.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="كشف حركة عهد الموظفين">
+                <sheet>
+                    <div class="oe_title">
+                        <h2>تقرير كشف حركة عهد الموظفين (Excel)</h2>
+                    </div>
+                    <group>
+                        <group string="الفترة">
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                        </group>
+                        <group string="نطاق التقرير">
+                            <field name="employee_id"
+                                   options="{'no_create': True}"
+                                   placeholder="اتركه فارغاً لعرض جميع الموظفين"/>
+                            <field name="company_id"
+                                   groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <field name="file_data" invisible="1"/>
+                    <field name="file_name" invisible="1"/>
+                </sheet>
+                <footer>
+                    <button name="action_generate_xlsx"
+                            type="object"
+                            string="إنشاء التقرير وتنزيله"
+                            class="btn-primary"/>
+                    <button string="إلغاء"
+                            class="btn-secondary"
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_custody_statement_report_wizard"
+            model="ir.actions.act_window">
+        <field name="name">كشف حركة عهد الموظفين (Excel)</field>
+        <field name="res_model">custody.statement.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="operation_cutting" model="dw.operation.type">
+            <field name="name">Cutting</field>
+            <field name="code">CUT</field>
+            <field name="sequence">10</field>
+            <field name="time_mode">per_meter</field>
+            <field name="time_value">1.5</field>
+            <field name="setup_minutes">10</field>
+        </record>
+        <record id="operation_shearing" model="dw.operation.type">
+            <field name="name">Shearing</field>
+            <field name="code">SHEAR</field>
+            <field name="sequence">20</field>
+            <field name="time_mode">per_m2</field>
+            <field name="time_value">2</field>
+            <field name="setup_minutes">10</field>
+        </record>
+        <record id="operation_punching" model="dw.operation.type">
+            <field name="name">Punching / Drilling</field>
+            <field name="code">PUNCH</field>
+            <field name="sequence">30</field>
+            <field name="time_mode">per_unit</field>
+            <field name="time_value">5</field>
+        </record>
+        <record id="operation_bending" model="dw.operation.type">
+            <field name="name">Bending</field>
+            <field name="code">BEND</field>
+            <field name="sequence">40</field>
+            <field name="time_mode">per_meter</field>
+            <field name="time_value">1</field>
+            <field name="setup_minutes">15</field>
+        </record>
+        <record id="operation_rolling" model="dw.operation.type">
+            <field name="name">Rolling</field>
+            <field name="code">ROLL</field>
+            <field name="sequence">50</field>
+            <field name="time_mode">per_meter</field>
+            <field name="time_value">1.5</field>
+        </record>
+        <record id="operation_turning" model="dw.operation.type">
+            <field name="name">Turning</field>
+            <field name="code">TURN</field>
+            <field name="sequence">60</field>
+            <field name="time_mode">per_unit</field>
+            <field name="time_value">10</field>
+        </record>
+        <record id="operation_milling" model="dw.operation.type">
+            <field name="name">Milling</field>
+            <field name="code">MILL</field>
+            <field name="sequence">70</field>
+            <field name="time_mode">per_unit</field>
+            <field name="time_value">10</field>
+        </record>
+        <record id="operation_welding" model="dw.operation.type">
+            <field name="name">Welding</field>
+            <field name="code">WELD</field>
+            <field name="sequence">80</field>
+            <field name="time_mode">per_weld_meter</field>
+            <field name="time_value">6</field>
+            <field name="setup_minutes">10</field>
+        </record>
+        <record id="operation_assembly" model="dw.operation.type">
+            <field name="name">Assembly</field>
+            <field name="code">ASSY</field>
+            <field name="sequence">90</field>
+            <field name="time_mode">per_unit</field>
+            <field name="time_value">30</field>
+        </record>
+        <record id="operation_grinding" model="dw.operation.type">
+            <field name="name">Grinding</field>
+            <field name="code">GRIND</field>
+            <field name="sequence">100</field>
+            <field name="time_mode">per_weld_meter</field>
+            <field name="time_value">3</field>
+        </record>
+        <record id="operation_cleaning" model="dw.operation.type">
+            <field name="name">Cleaning</field>
+            <field name="code">CLEAN</field>
+            <field name="sequence">110</field>
+            <field name="time_mode">per_m2</field>
+            <field name="time_value">2</field>
+        </record>
+        <record id="operation_painting" model="dw.operation.type">
+            <field name="name">Painting</field>
+            <field name="code">PAINT</field>
+            <field name="sequence">120</field>
+            <field name="time_mode">per_m2</field>
+            <field name="time_value">4</field>
+            <field name="setup_minutes">15</field>
+        </record>
+        <record id="operation_galvanizing" model="dw.operation.type">
+            <field name="name">Galvanizing</field>
+            <field name="code">GALV</field>
+            <field name="sequence">130</field>
+            <field name="time_mode">per_kg</field>
+            <field name="time_value">0.5</field>
+            <field name="is_outsourced" eval="True"/>
+        </record>
+        <record id="operation_installation" model="dw.operation.type">
+            <field name="name">Installation</field>
+            <field name="code">INSTALL</field>
+            <field name="sequence">140</field>
+            <field name="time_mode">per_unit</field>
+            <field name="time_value">60</field>
+        </record>
+        <record id="operation_inspection" model="dw.operation.type">
+            <field name="name">Inspection</field>
+            <field name="code">INSPECT</field>
+            <field name="sequence">150</field>
+            <field name="time_mode">per_unit</field>
+            <field name="time_value">10</field>
+        </record>
+        <record id="operation_packing" model="dw.operation.type">
+            <field name="name">Packing</field>
+            <field name="code">PACK</field>
+            <field name="sequence">160</field>
+            <field name="time_mode">per_unit</field>
+            <field name="time_value">10</field>
+        </record>
+        <record id="operation_delivery" model="dw.operation.type">
+            <field name="name">Delivery</field>
+            <field name="code">DELIVER</field>
+            <field name="sequence">170</field>
+            <field name="time_mode">fixed</field>
+            <field name="time_value">60</field>
+        </record>
+    </data>
+</odoo>

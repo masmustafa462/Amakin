@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dw_opening_view_form" model="ir.ui.view">
+        <field name="name">dw.opening.form</field>
+        <field name="model">dw.opening</field>
+        <field name="arch" type="xml">
+            <form string="Manufacturing Item">
+                <header>
+                    <button name="action_generate_components" type="object"
+                            string="Generate Components" class="btn-primary"
+                            invisible="state not in ('draft', 'quoted')"/>
+                    <button name="action_recompute_estimate" type="object"
+                            string="Recompute Estimate"
+                            invisible="state not in ('draft', 'quoted', 'confirmed')"/>
+                    <button name="action_sync_quotation_line" type="object"
+                            string="Sync Quotation Line"
+                            invisible="state not in ('draft', 'quoted') or not sale_order_id"/>
+                    <button name="action_create_bom" type="object" string="Create Bill of Materials"
+                            invisible="bom_id or state in ('draft', 'cancel')"/>
+                    <button name="action_create_manufacturing_order" type="object"
+                            string="Create Manufacturing Order" class="btn-primary"
+                            invisible="state != 'confirmed'"/>
+                    <button name="action_recompute_actual_cost" type="object"
+                            string="Recompute Actual Cost"
+                            invisible="production_count == 0"
+                            groups="dw_manufacturing.group_dw_cost_accountant"/>
+                    <button name="action_set_ready" type="object" string="Set Ready"
+                            invisible="state != 'production'"/>
+                    <button name="action_set_delivered" type="object" string="Set Delivered"
+                            invisible="state != 'ready'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,quoted,confirmed,production,ready,delivered"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_productions" type="object"
+                                class="oe_stat_button" icon="fa-cogs"
+                                invisible="production_count == 0">
+                            <field name="production_count" widget="statinfo" string="Manufacturing"/>
+                        </button>
+                        <button name="action_view_bom" type="object" class="oe_stat_button"
+                                icon="fa-flask" invisible="not bom_id" string="Bill of Materials"/>
+                        <button name="action_view_cost_lines" type="object"
+                                class="oe_stat_button" icon="fa-money" string="Actual Cost"/>
+                        <button name="action_view_quality_checks" type="object"
+                                class="oe_stat_button" icon="fa-check-square-o"
+                                invisible="quality_check_count == 0">
+                            <field name="quality_check_count" widget="statinfo" string="Quality"/>
+                        </button>
+                        <button name="action_view_alerts" type="object"
+                                class="oe_stat_button" icon="fa-exclamation-triangle"
+                                invisible="alert_count == 0">
+                            <field name="alert_count" widget="statinfo" string="Alerts"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Rejected" bg_color="text-bg-danger"
+                            invisible="quality_state != 'fail'"/>
+                    <field name="family_rule_count" invisible="1"/>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not setup_warning or state not in ('draft', 'quoted')">
+                        <field name="setup_warning" readonly="1" nolabel="1"/>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                        <h3><field name="description" placeholder="Product description"/></h3>
+                    </div>
+                    <group>
+                        <group string="Commercial">
+                            <field name="sale_order_id" readonly="state not in ('draft', 'quoted')"/>
+                            <field name="partner_id"/>
+                            <field name="project_id"/>
+                            <field name="sale_line_id" readonly="1" invisible="not sale_line_id"/>
+                            <field name="location"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group string="Product">
+                            <field name="family_id"/>
+                            <field name="finished_product_id"/>
+                            <field name="uom_id" groups="uom.group_uom"/>
+                            <field name="quantity"/>
+                            <field name="opening_type" invisible="family_id"/>
+                            <field name="visible_dimension_codes" invisible="1"/>
+                            <field name="required_dimension_codes" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Dimensions">
+                        <group>
+                            <field name="length_mm"
+                                   invisible="',length,' not in visible_dimension_codes"
+                                   required="',length,' in required_dimension_codes"/>
+                            <field name="width_mm"
+                                   invisible="',width,' not in visible_dimension_codes"
+                                   required="',width,' in required_dimension_codes"/>
+                            <field name="height_mm"
+                                   invisible="',height,' not in visible_dimension_codes"
+                                   required="',height,' in required_dimension_codes"/>
+                            <field name="thickness_mm"
+                                   invisible="',thickness,' not in visible_dimension_codes"
+                                   required="',thickness,' in required_dimension_codes"/>
+                            <field name="diameter_mm"
+                                   invisible="',diameter,' not in visible_dimension_codes"
+                                   required="',diameter,' in required_dimension_codes"/>
+                            <field name="leaf_count"
+                                   invisible="',leaf_count,' not in visible_dimension_codes"/>
+                            <field name="post_spacing_mm"
+                                   invisible="',post_spacing,' not in visible_dimension_codes"/>
+                            <field name="post_count"
+                                   invisible="',post_count,' not in visible_dimension_codes"/>
+                            <field name="section_count"
+                                   invisible="',section_count,' not in visible_dimension_codes"/>
+                        </group>
+                        <group>
+                            <field name="perimeter_m" readonly="1"
+                                   invisible="',perimeter,' not in visible_dimension_codes"/>
+                            <field name="area_m2" readonly="1"
+                                   invisible="',area,' not in visible_dimension_codes"/>
+                            <field name="volume_m3" readonly="1"
+                                   invisible="',volume,' not in visible_dimension_codes"/>
+                            <field name="total_length_m" readonly="1"/>
+                            <field name="length_m" readonly="1" invisible="1"/>
+                            <field name="width_m" readonly="1" invisible="1"/>
+                            <field name="height_m" readonly="1" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Staircase Geometry"
+                           invisible="',step_count,' not in visible_dimension_codes and ',total_rise,' not in visible_dimension_codes">
+                        <group>
+                            <field name="total_rise_mm"
+                                   invisible="',total_rise,' not in visible_dimension_codes"
+                                   required="',total_rise,' in required_dimension_codes"/>
+                            <field name="step_count"
+                                   invisible="',step_count,' not in visible_dimension_codes"
+                                   required="',step_count,' in required_dimension_codes"/>
+                            <field name="step_height_mm"
+                                   invisible="',step_height,' not in visible_dimension_codes"/>
+                            <field name="step_width_mm"
+                                   invisible="',step_width,' not in visible_dimension_codes"/>
+                        </group>
+                        <group>
+                            <field name="total_run_m" readonly="1"/>
+                            <field name="stair_slope_length_m" readonly="1"/>
+                            <field name="stair_angle_deg"/>
+                        </group>
+                    </group>
+                    <group string="Process Quantities">
+                        <group>
+                            <field name="surface_factor"/>
+                            <field name="weld_length_m"
+                                   invisible="',weld_length,' not in visible_dimension_codes"/>
+                        </group>
+                        <group>
+                            <field name="paint_area_m2"
+                                   invisible="',paint_area,' not in visible_dimension_codes"/>
+                            <field name="galv_area_m2"
+                                   invisible="',galv_area,' not in visible_dimension_codes"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Materials and Finish" name="materials">
+                            <group>
+                                <group string="Metal">
+                                    <field name="metal_type_id"/>
+                                    <field name="metal_grade_id"/>
+                                </group>
+                                <group string="Finish">
+                                    <field name="finish_type_id"/>
+                                    <field name="color"/>
+                                    <field name="opening_system"/>
+                                </group>
+                            </group>
+                            <group>
+                                <group string="Specifications">
+                                    <field name="glass_specification"/>
+                                    <field name="accessory_specification"/>
+                                </group>
+                                <group string="Drawing">
+                                    <field name="drawing_id"/>
+                                    <field name="drawing_revision_id"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Components" name="components">
+                            <field name="component_line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="product_id"/>
+                                    <field name="component_kind"/>
+                                    <field name="rule_id" optional="hide"/>
+                                    <field name="operation_type_id" optional="hide"/>
+                                    <field name="qty_per_unit"/>
+                                    <field name="uom_id"/>
+                                    <field name="total_qty" readonly="1"/>
+                                    <field name="theoretical_weight_kg" readonly="1" sum="Weight"/>
+                                    <field name="include_in_bom" optional="hide"/>
+                                    <field name="estimated_unit_cost" readonly="1"/>
+                                    <field name="estimated_total_cost" readonly="1" sum="Material Total"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Operations" name="operations">
+                            <field name="operation_line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="operation_type_id"/>
+                                    <field name="workcenter_id"/>
+                                    <field name="planned_minutes" sum="Minutes"/>
+                                    <field name="labor_rate"/>
+                                    <field name="machine_rate"/>
+                                    <field name="labor_cost" readonly="1" sum="Labour"/>
+                                    <field name="machine_cost" readonly="1" sum="Machine"/>
+                                    <field name="is_outsourced"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Estimated Cost" name="costing">
+                            <group>
+                                <group string="Cost Build-up">
+                                    <field name="material_cost" readonly="1"/>
+                                    <field name="labor_cost" readonly="1"/>
+                                    <field name="labor_cost_manual"/>
+                                    <field name="machine_cost" readonly="1"/>
+                                    <field name="machine_cost_manual"/>
+                                    <field name="subcontract_cost" readonly="1"/>
+                                    <field name="subcontract_cost_manual"/>
+                                    <field name="contractor_cost"/>
+                                    <field name="transport_cost"/>
+                                    <field name="installation_cost"/>
+                                    <field name="direct_expense_cost"/>
+                                    <field name="manual_cost" readonly="1"/>
+                                    <field name="overhead_rule_id"/>
+                                    <field name="overhead_cost"/>
+                                    <field name="estimated_cost" readonly="1"/>
+                                    <field name="estimated_unit_cost" readonly="1"/>
+                                </group>
+                                <group string="Pricing">
+                                    <field name="pricing_method"/>
+                                    <field name="price_rate" invisible="pricing_method == 'cost_plus'"/>
+                                    <field name="markup_percent" invisible="pricing_method != 'cost_plus'"/>
+                                    <field name="recommended_price_unit" readonly="1"/>
+                                    <field name="selling_price_unit"/>
+                                    <field name="expected_revenue" readonly="1"/>
+                                    <field name="expected_profit" readonly="1"/>
+                                    <field name="expected_margin_percent" readonly="1" widget="percentage"/>
+                                </group>
+                            </group>
+                            <separator string="Manual Cost Items"/>
+                            <field name="extra_cost_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="cost_type"/>
+                                    <field name="amount" sum="Total"/>
+                                    <field name="approved" widget="boolean_toggle"/>
+                                    <field name="approved_by" readonly="1" optional="hide"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Actual Cost" name="actual" groups="dw_manufacturing.group_dw_user">
+                            <group>
+                                <group string="Actual">
+                                    <field name="actual_material_cost" readonly="1"/>
+                                    <field name="actual_labor_cost" readonly="1"/>
+                                    <field name="actual_machine_cost" readonly="1"/>
+                                    <field name="actual_subcontract_cost" readonly="1"/>
+                                    <field name="actual_scrap_cost" readonly="1"/>
+                                    <field name="actual_overhead_cost" readonly="1"/>
+                                    <field name="actual_other_cost" readonly="1"/>
+                                    <field name="actual_cost" readonly="1"/>
+                                </group>
+                                <group string="Result" groups="dw_manufacturing.group_dw_profitability">
+                                    <field name="invoiced_revenue" readonly="1"/>
+                                    <field name="internal_transfer_value" readonly="1"
+                                           invisible="not internal_transfer_value"/>
+                                    <field name="actual_revenue" readonly="1"/>
+                                    <field name="actual_profit" readonly="1"/>
+                                    <field name="actual_margin_percent" readonly="1" widget="percentage"/>
+                                    <field name="cost_variance" readonly="1"/>
+                                    <field name="cost_variance_percent" readonly="1" widget="percentage"/>
+                                </group>
+                            </group>
+                            <field name="cost_line_ids" readonly="1">
+                                <list>
+                                    <field name="date"/>
+                                    <field name="cost_type"/>
+                                    <field name="description"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id" optional="hide"/>
+                                    <field name="unit_price"/>
+                                    <field name="amount" sum="Total"/>
+                                    <field name="state" widget="badge"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Weight" name="weight">
+                            <group>
+                                <group string="Planned">
+                                    <field name="theoretical_weight_kg" readonly="1"/>
+                                    <field name="planned_weight_kg" readonly="1"/>
+                                    <field name="manual_weight_kg"/>
+                                </group>
+                                <group string="Actual">
+                                    <field name="issued_weight_kg" readonly="1"/>
+                                    <field name="finished_weight_kg"/>
+                                    <field name="scrap_weight_kg" readonly="1"/>
+                                    <field name="weight_variance_kg" readonly="1"/>
+                                    <field name="weight_variance_percent" readonly="1" widget="percentage"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Quality" name="quality">
+                            <group>
+                                <field name="quality_state" readonly="1"/>
+                            </group>
+                            <field name="quality_check_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="stage"/>
+                                    <field name="is_mandatory"/>
+                                    <field name="state" widget="badge"/>
+                                    <field name="result" widget="badge"
+                                           decoration-success="result == 'pass'"
+                                           decoration-warning="result == 'rework'"
+                                           decoration-danger="result == 'fail'"/>
+                                    <field name="inspector_id"/>
+                                    <field name="inspection_date"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Scrap and Off-cuts" name="scrap">
+                            <field name="scrap_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="product_id"/>
+                                    <field name="scrap_qty"/>
+                                    <field name="dw_reason_id"/>
+                                    <field name="dw_is_planned"/>
+                                    <field name="dw_value"/>
+                                    <field name="state" widget="badge"/>
+                                    <field name="dw_currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                            <separator string="Off-cuts"/>
+                            <field name="offcut_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="product_id"/>
+                                    <field name="length_mm"/>
+                                    <field name="quantity"/>
+                                    <field name="weight_kg"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Instructions" name="instructions">
+                            <field name="manufacturing_instructions"/>
+                            <separator string="Notes"/>
+                            <field name="note" placeholder="Drawings, installation notes or special requirements..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="dw_opening_view_list" model="ir.ui.view">
+        <field name="name">dw.opening.list</field>
+        <field name="model">dw.opening</field>
+        <field name="arch" type="xml">
+            <list decoration-info="state == 'production'"
+                  decoration-success="state in ('ready', 'delivered')"
+                  decoration-muted="state == 'cancel'"
+                  decoration-danger="quality_state == 'fail'">
+                <field name="name"/>
+                <field name="family_id"/>
+                <field name="sale_order_id" optional="show"/>
+                <field name="partner_id"/>
+                <field name="project_id" optional="show"/>
+                <field name="location" optional="hide"/>
+                <field name="finished_product_id"/>
+                <field name="length_mm" optional="hide"/>
+                <field name="width_mm" optional="show"/>
+                <field name="height_mm" optional="show"/>
+                <field name="quantity"/>
+                <field name="planned_weight_kg" sum="Weight" optional="hide"/>
+                <field name="estimated_cost" sum="Estimated" optional="show"/>
+                <field name="actual_cost" sum="Actual" optional="show"/>
+                <field name="expected_revenue" sum="Revenue" optional="hide"/>
+                <field name="actual_profit" sum="Profit" optional="show"
+                       groups="dw_manufacturing.group_dw_profitability"/>
+                <field name="quality_state" widget="badge" optional="show"/>
+                <field name="state" widget="badge"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_opening_view_kanban" model="ir.ui.view">
+        <field name="name">dw.opening.kanban</field>
+        <field name="model">dw.opening</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state">
+                <field name="state"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="o_kanban_record_top">
+                            <div class="o_kanban_record_headings">
+                                <strong class="o_kanban_record_title"><field name="name"/></strong>
+                                <span class="o_kanban_record_subtitle"><field name="finished_product_id"/></span>
+                            </div>
+                        </div>
+                        <div>
+                            <field name="family_id"/>
+                        </div>
+                        <div>
+                            <field name="partner_id"/>
+                        </div>
+                        <div>
+                            <span>Qty: <field name="quantity"/></span>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="dw_opening_view_search" model="ir.ui.view">
+        <field name="name">dw.opening.search</field>
+        <field name="model">dw.opening</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="description"/>
+                <field name="sale_order_id"/>
+                <field name="partner_id"/>
+                <field name="project_id"/>
+                <field name="family_id"/>
+                <field name="finished_product_id"/>
+                <field name="drawing_number"/>
+                <filter string="In Production" name="in_production" domain="[('state', '=', 'production')]"/>
+                <filter string="Ready" name="ready" domain="[('state', '=', 'ready')]"/>
+                <filter string="Delivered" name="delivered" domain="[('state', '=', 'delivered')]"/>
+                <separator/>
+                <filter string="Over Budget" name="over_budget" domain="[('cost_variance', '>', 0)]"/>
+                <filter string="Quality Rejected" name="rejected" domain="[('quality_state', '=', 'fail')]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Customer" name="group_customer" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Project" name="group_project" context="{'group_by': 'project_id'}"/>
+                    <filter string="Product Family" name="group_family" context="{'group_by': 'family_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="dw_opening_view_pivot" model="ir.ui.view">
+        <field name="name">dw.opening.pivot</field>
+        <field name="model">dw.opening</field>
+        <field name="arch" type="xml">
+            <pivot string="Item Profitability">
+                <field name="family_id" type="row"/>
+                <field name="estimated_cost" type="measure"/>
+                <field name="actual_cost" type="measure"/>
+                <field name="actual_revenue" type="measure"/>
+                <field name="actual_profit" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="dw_opening_view_graph" model="ir.ui.view">
+        <field name="name">dw.opening.graph</field>
+        <field name="model">dw.opening</field>
+        <field name="arch" type="xml">
+            <graph string="Item Profitability" type="bar">
+                <field name="family_id"/>
+                <field name="actual_profit" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="dw_opening_action" model="ir.actions.act_window">
+        <field name="name">Manufacturing Items</field>
+        <field name="res_model">dw.opening</field>
+        <field name="view_mode">list,kanban,form,pivot,graph</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first manufacturing item</p>
+            <p>Doors, fences, staircases, handrails, canopies and any other fabricated metal product.</p>
+        </field>
+    </record>
+
+    <record id="dw_opening_action_profitability" model="ir.actions.act_window">
+        <field name="name">Item Profitability</field>
+        <field name="res_model">dw.opening</field>
+        <field name="view_mode">pivot,graph,list,form</field>
+        <field name="context">{'search_default_group_family': 1}</field>
+    </record>
+</odoo>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_form_dw" model="ir.ui.view">
+        <field name="name">product.template.form.dw</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Metal Fabrication" name="dw_metal">
+                    <group>
+                        <group string="Material">
+                            <field name="dw_material_kind"/>
+                            <field name="dw_metal_profile_id"/>
+                            <field name="dw_is_customer_supplied"/>
+                        </group>
+                        <group string="Weight and Stock Length">
+                            <field name="dw_weight_per_uom"/>
+                            <field name="dw_commercial_length_m"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_search_dw" model="ir.ui.view">
+        <field name="name">product.template.search.dw</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <field name="name" position="after">
+                <field name="dw_metal_profile_id"/>
+            </field>
+        </field>
+    </record>
+</odoo>

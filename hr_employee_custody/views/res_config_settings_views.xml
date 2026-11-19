@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_custody" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.custody</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="50"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="إدارة العهد" string="إدارة العهد" name="hr_employee_custody"
+                     groups="hr_employee_custody.group_custody_manager">
+                    <block title="إعدادات العهد" name="custody_settings_block">
+                        <setting id="custody_enable_accounting" string="التكامل المحاسبي"
+                                 help="إنشاء قيود تلقائية عند الصرف والتسوية.">
+                            <field name="custody_enable_accounting"/>
+                        </setting>
+                        <setting id="custody_enable_approvals" string="دورة الاعتماد">
+                            <field name="custody_enable_approvals"/>
+                        </setting>
+                        <setting id="custody_enable_hr_approval" string="اعتماد HR">
+                            <field name="custody_enable_hr_approval"/>
+                        </setting>
+                        <setting id="custody_enable_accounting_approval" string="اعتماد المحاسبة">
+                            <field name="custody_enable_accounting_approval"/>
+                        </setting>
+                        <setting id="custody_enable_notifications" string="الإشعارات">
+                            <field name="custody_enable_notifications"/>
+                        </setting>
+                        <setting id="custody_allow_partial_settlement" string="السماح بالتسوية الجزئية">
+                            <field name="custody_allow_partial_settlement"/>
+                        </setting>
+                        <setting id="custody_overdue_threshold_days" string="عتبة التأخير (أيام)">
+                            <field name="custody_overdue_threshold_days"/>
+                        </setting>
+                    </block>
+                    <block title="الحسابات الافتراضية" name="custody_accounts_block">
+                        <setting id="custody_default_journal_id" string="اليومية الافتراضية">
+                            <field name="custody_default_journal_id"/>
+                        </setting>
+                        <setting id="custody_account_id" string="حساب العهدة">
+                            <field name="custody_account_id"/>
+                        </setting>
+                        <setting id="custody_cash_account_id" string="حساب الصندوق/البنك">
+                            <field name="custody_cash_account_id"/>
+                        </setting>
+                        <setting id="custody_expense_account_id" string="حساب المصروف الافتراضي">
+                            <field name="custody_expense_account_id"/>
+                        </setting>
+                        <setting id="custody_salary_deduction_account_id" string="حساب خصم الراتب">
+                            <field name="custody_salary_deduction_account_id"/>
+                        </setting>
+                        <setting id="custody_loss_account_id" string="حساب الفقد/التلف">
+                            <field name="custody_loss_account_id"/>
+                        </setting>
+                        <setting id="custody_employee_due_account_id" string="حساب مستحقات الموظف"
+                                 help="يُسجَّل عليه الفرق المستحق للموظف عند تجاوز مبلغ التسوية لرصيد العهدة.">
+                            <field name="custody_employee_due_account_id"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Odoo 19 removed the 'inline' value from ir.actions.act_window.target
+         (allowed: current / new / fullscreen / main). Core 19 settings
+         actions simply omit target and pass bin_size in the context. -->
+    <record id="action_custody_config_settings" model="ir.actions.act_window">
+        <field name="name">إعدادات العهد</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'hr_employee_custody', 'bin_size': False}</field>
+    </record>
+
+</odoo>

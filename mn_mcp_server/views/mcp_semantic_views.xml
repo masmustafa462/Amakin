@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ══════════════ Glossary ══════════════ -->
+    <record id="view_mcp_glossary_list" model="ir.ui.view">
+        <field name="name">mn.mcp.glossary.list</field>
+        <field name="model">mn.mcp.glossary</field>
+        <field name="arch" type="xml">
+            <list string="Glossary">
+                <field name="term"/>
+                <field name="definition"/>
+                <field name="model_name"/>
+                <field name="field_name"/>
+                <field name="synonyms" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mcp_glossary_form" model="ir.ui.view">
+        <field name="name">mn.mcp.glossary.form</field>
+        <field name="model">mn.mcp.glossary</field>
+        <field name="arch" type="xml">
+            <form string="Glossary term">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="term" string="Term"/>
+                        <h1><field name="term" placeholder="e.g. Churn"/></h1>
+                    </div>
+                    <group>
+                        <field name="definition"
+                               placeholder="Explain it the way you would to a new analyst on their first day."/>
+                    </group>
+                    <group>
+                        <group string="Where it lives">
+                            <field name="model_id" options="{'no_create': True}"/>
+                            <field name="field_name" placeholder="e.g. stage_id"/>
+                        </group>
+                        <group string="Also called">
+                            <field name="synonyms" placeholder="attrition, lost customers"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                    <group string="Example domain">
+                        <field name="example_domain" nolabel="1"
+                               placeholder="[(&quot;stage_id.is_lost&quot;,&quot;=&quot;,True)]"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mcp_glossary" model="ir.actions.act_window">
+        <field name="name">Business Glossary</field>
+        <field name="res_model">mn.mcp.glossary</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Tell the AI what your words mean</p>
+            <p>
+                An assistant pointed at a raw database has to guess what "churn"
+                or "live job" means in your company. Written down here, it stops
+                guessing — and stops answering confidently with the wrong number.
+            </p>
+        </field>
+    </record>
+
+    <!-- ══════════════ Model hints ══════════════ -->
+    <record id="view_mcp_model_hint_list" model="ir.ui.view">
+        <field name="name">mn.mcp.model.hint.list</field>
+        <field name="model">mn.mcp.model.hint</field>
+        <field name="arch" type="xml">
+            <list string="Model hints">
+                <field name="model_name"/>
+                <field name="summary"/>
+                <field name="key_fields" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mcp_model_hint_form" model="ir.ui.view">
+        <field name="name">mn.mcp.model.hint.form</field>
+        <field name="model">mn.mcp.model.hint</field>
+        <field name="arch" type="xml">
+            <form string="Model hint">
+                <sheet>
+                    <group>
+                        <field name="model_id" options="{'no_create': True}"/>
+                        <field name="active"/>
+                    </group>
+                    <group string="What this model is for">
+                        <field name="summary" nolabel="1"
+                               placeholder="Customer invoices and vendor bills. This is where revenue actually lands."/>
+                    </group>
+                    <group string="Fields that matter">
+                        <field name="key_fields" nolabel="1"
+                               placeholder="partner_id, invoice_date, amount_total, payment_state"/>
+                    </group>
+                    <group string="What goes wrong here">
+                        <field name="caveats" nolabel="1"
+                               placeholder="sale.order includes quotations that never became money — use this model for revenue."/>
+                    </group>
+                    <group string="Questions this model can answer">
+                        <field name="example_questions" nolabel="1"
+                               placeholder="Which customers are overdue?&#10;What did we invoice last month?"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mcp_model_hint" model="ir.actions.act_window">
+        <field name="name">Model Hints</field>
+        <field name="res_model">mn.mcp.model.hint</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Point the AI at the right model</p>
+            <p>
+                The highest-value sentence you can write here is the one that
+                stops a wrong query before it is made: "for revenue use
+                account.move, not sale.order."
+            </p>
+        </field>
+    </record>
+
+    <!-- ══════════════ Metrics ══════════════ -->
+    <record id="view_mcp_metric_list" model="ir.ui.view">
+        <field name="name">mn.mcp.metric.list</field>
+        <field name="model">mn.mcp.metric</field>
+        <field name="arch" type="xml">
+            <list string="Metrics">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="title"/>
+                <field name="model_name"/>
+                <field name="aggregate"/>
+                <field name="measure_field" optional="show"/>
+                <field name="default_period"/>
+                <field name="call_count" string="Calls"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_mcp_metric_form" model="ir.ui.view">
+        <field name="name">mn.mcp.metric.form</field>
+        <field name="model">mn.mcp.metric</field>
+        <field name="arch" type="xml">
+            <form string="Metric">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Metric name"/>
+                        <h1><field name="name" placeholder="mrr"/></h1>
+                        <field name="title" placeholder="Monthly Recurring Revenue"/>
+                    </div>
+                    <group>
+                        <field name="description"
+                               placeholder="What this number is, and when it answers the question being asked."/>
+                    </group>
+                    <group>
+                        <group string="Source">
+                            <field name="model_id" options="{'no_create': True}"/>
+                            <field name="aggregate"/>
+                            <field name="measure_field"
+                                   invisible="aggregate == 'count'"
+                                   required="aggregate != 'count'"
+                                   placeholder="amount_total"/>
+                            <field name="unit" placeholder="SAR"/>
+                        </group>
+                        <group string="Time window">
+                            <field name="date_field" placeholder="invoice_date"/>
+                            <field name="default_period"/>
+                            <field name="active"/>
+                            <field name="call_count" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Which records count" name="domain">
+                            <field name="domain" nolabel="1" class="font-monospace"
+                                   placeholder="[(&quot;move_type&quot;,&quot;=&quot;,&quot;out_invoice&quot;),(&quot;state&quot;,&quot;=&quot;,&quot;posted&quot;)]"/>
+                        </page>
+                        <page string="Break it down by" name="groupby">
+                            <field name="groupby" nolabel="1"
+                                   placeholder="partner_id, invoice_date:month"/>
+                        </page>
+                    </notebook>
+                    <div class="alert alert-info" role="alert">
+                        The AI sees this as a tool called
+                        <b>metric_<field name="name" readonly="1" nolabel="1" class="oe_inline"/></b>.
+                        It can narrow the result with an extra domain, but it cannot
+                        change how the number is calculated.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_mcp_metric" model="ir.actions.act_window">
+        <field name="name">Business Metrics</field>
+        <field name="res_model">mn.mcp.metric</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Define the numbers once</p>
+            <p>
+                Without this, the assistant assembles its own aggregation every
+                time somebody asks for revenue. That works until two people ask
+                the same question and get two different answers, and neither is
+                wrong enough to notice.
+            </p>
+        </field>
+    </record>
+
+</odoo>

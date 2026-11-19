@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_custody_handover" model="ir.actions.report">
+        <field name="name">نموذج تسلّم عهدة</field>
+        <field name="model">employee.custody</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hr_employee_custody.report_custody_handover</field>
+        <field name="report_file">hr_employee_custody.report_custody_handover</field>
+        <field name="binding_model_id" ref="model_employee_custody"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'تسلم عهدة - %s' % (object.name)</field>
+    </record>
+
+    <record id="action_report_custody_clearance" model="ir.actions.report">
+        <field name="name">نموذج إخلاء طرف</field>
+        <field name="model">employee.custody</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hr_employee_custody.report_custody_clearance</field>
+        <field name="report_file">hr_employee_custody.report_custody_clearance</field>
+        <field name="binding_model_id" ref="model_employee_custody"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'إخلاء طرف - %s' % (object.name)</field>
+    </record>
+
+    <record id="action_report_custody_ledger" model="ir.actions.report">
+        <field name="name">كشف حساب عهدة</field>
+        <field name="model">employee.custody</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">hr_employee_custody.report_custody_ledger</field>
+        <field name="report_file">hr_employee_custody.report_custody_ledger</field>
+        <field name="binding_model_id" ref="model_employee_custody"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'كشف عهدة - %s' % (object.name)</field>
+    </record>
+
+</odoo>

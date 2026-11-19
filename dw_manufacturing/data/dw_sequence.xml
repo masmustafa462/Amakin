@@ -1,0 +1,32 @@
+<odoo>
+    <data noupdate="1">
+        <record id="seq_dw_opening" model="ir.sequence">
+            <field name="name">Manufacturing Item</field>
+            <field name="code">dw.opening</field>
+            <field name="prefix">DW/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        <record id="seq_dw_quality_check" model="ir.sequence">
+            <field name="name">Quality Check</field>
+            <field name="code">dw.quality.check</field>
+            <field name="prefix">QC/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        <record id="seq_dw_offcut" model="ir.sequence">
+            <field name="name">Material Off-cut</field>
+            <field name="code">dw.material.offcut</field>
+            <field name="prefix">OFC/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        <record id="seq_dw_project_cost_entry" model="ir.sequence">
+            <field name="name">Project Cost Entry</field>
+            <field name="code">dw.project.cost.entry</field>
+            <field name="prefix">PCE/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

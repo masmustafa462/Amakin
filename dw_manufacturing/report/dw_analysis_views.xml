@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============ Profitability analysis ============ -->
+    <record id="dw_profitability_report_view_pivot" model="ir.ui.view">
+        <field name="name">dw.profitability.report.pivot</field>
+        <field name="model">dw.profitability.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Profitability" sample="1">
+                <field name="project_id" type="row"/>
+                <field name="estimated_cost" type="measure"/>
+                <field name="actual_cost" type="measure"/>
+                <field name="actual_revenue" type="measure"/>
+                <field name="actual_profit" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="dw_profitability_report_view_graph" model="ir.ui.view">
+        <field name="name">dw.profitability.report.graph</field>
+        <field name="model">dw.profitability.report</field>
+        <field name="arch" type="xml">
+            <graph string="Profitability" type="bar" sample="1">
+                <field name="project_id"/>
+                <field name="actual_profit" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="dw_profitability_report_view_list" model="ir.ui.view">
+        <field name="name">dw.profitability.report.list</field>
+        <field name="model">dw.profitability.report</field>
+        <field name="arch" type="xml">
+            <list string="Profitability" create="false">
+                <field name="date"/>
+                <field name="opening_id"/>
+                <field name="project_id"/>
+                <field name="sale_order_id" optional="show"/>
+                <field name="partner_id"/>
+                <field name="family_id"/>
+                <field name="quantity"/>
+                <field name="weight_kg" sum="Weight" optional="hide"/>
+                <field name="estimated_cost" sum="Estimated"/>
+                <field name="actual_cost" sum="Actual"/>
+                <field name="cost_variance" sum="Variance"/>
+                <field name="expected_revenue" sum="Expected Revenue" optional="hide"/>
+                <field name="invoiced_revenue" sum="Invoiced" optional="show"/>
+                <field name="internal_transfer_value" sum="Internal Transfer" optional="hide"/>
+                <field name="actual_profit" sum="Profit"/>
+                <field name="cost_per_kg" optional="hide"/>
+                <field name="cost_per_m2" optional="hide"/>
+                <field name="cost_per_m" optional="hide"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_profitability_report_view_search" model="ir.ui.view">
+        <field name="name">dw.profitability.report.search</field>
+        <field name="model">dw.profitability.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="opening_id"/>
+                <field name="project_id"/>
+                <field name="partner_id"/>
+                <field name="family_id"/>
+                <filter string="Over Budget" name="over_budget" domain="[('cost_variance', '>', 0)]"/>
+                <filter string="Loss Making" name="loss" domain="[('actual_profit', '&lt;', 0)]"/>
+                <filter string="Internal Work" name="internal"
+                        domain="[('relationship', '!=', 'external')]"/>
+                <group>
+                    <filter string="Project" name="group_project" context="{'group_by': 'project_id'}"/>
+                    <filter string="Customer" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Product Family" name="group_family" context="{'group_by': 'family_id'}"/>
+                    <filter string="Sales Order" name="group_so" context="{'group_by': 'sale_order_id'}"/>
+                    <filter string="Manufacturing Order" name="group_mo" context="{'group_by': 'production_id'}"/>
+                    <filter string="Month" name="group_month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="dw_project_profitability_report_action" model="ir.actions.act_window">
+        <field name="name">Project Profitability</field>
+        <field name="res_model">dw.profitability.report</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="context">{'search_default_group_project': 1}</field>
+    </record>
+
+    <record id="dw_customer_profitability_report_action" model="ir.actions.act_window">
+        <field name="name">Customer Profitability</field>
+        <field name="res_model">dw.profitability.report</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="context">{'search_default_group_partner': 1}</field>
+    </record>
+
+    <!-- ============ Cost and time variance ============ -->
+    <record id="dw_cost_variance_report_view_pivot" model="ir.ui.view">
+        <field name="name">dw.cost.variance.report.pivot</field>
+        <field name="model">dw.cost.variance.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Cost Variance" sample="1">
+                <field name="family_id" type="row"/>
+                <field name="estimated_cost" type="measure"/>
+                <field name="actual_cost" type="measure"/>
+                <field name="material_variance" type="measure"/>
+                <field name="labor_variance" type="measure"/>
+                <field name="time_variance_minutes" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="dw_cost_variance_report_view_graph" model="ir.ui.view">
+        <field name="name">dw.cost.variance.report.graph</field>
+        <field name="model">dw.cost.variance.report</field>
+        <field name="arch" type="xml">
+            <graph string="Cost Variance" type="bar" sample="1">
+                <field name="family_id"/>
+                <field name="cost_variance" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="dw_cost_variance_report_view_list" model="ir.ui.view">
+        <field name="name">dw.cost.variance.report.list</field>
+        <field name="model">dw.cost.variance.report</field>
+        <field name="arch" type="xml">
+            <list string="Cost Variance" create="false"
+                  decoration-danger="cost_variance > 0" decoration-success="cost_variance &lt; 0">
+                <field name="date_start"/>
+                <field name="production_id"/>
+                <field name="opening_id" optional="show"/>
+                <field name="project_id" optional="show"/>
+                <field name="family_id" optional="hide"/>
+                <field name="estimated_cost" sum="Estimated"/>
+                <field name="actual_cost" sum="Actual"/>
+                <field name="cost_variance" sum="Variance"/>
+                <field name="material_variance" sum="Material" optional="show"/>
+                <field name="labor_variance" sum="Labour" optional="show"/>
+                <field name="planned_minutes" sum="Planned min" optional="hide"/>
+                <field name="actual_minutes" sum="Actual min" optional="hide"/>
+                <field name="time_variance_minutes" sum="Time Variance"/>
+                <field name="planned_weight_kg" sum="Planned kg" optional="hide"/>
+                <field name="issued_weight_kg" sum="Issued kg" optional="hide"/>
+                <field name="weight_variance_kg" sum="Weight Variance" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_cost_variance_report_view_search" model="ir.ui.view">
+        <field name="name">dw.cost.variance.report.search</field>
+        <field name="model">dw.cost.variance.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="production_id"/>
+                <field name="opening_id"/>
+                <field name="project_id"/>
+                <filter string="Over Budget" name="over" domain="[('cost_variance', '>', 0)]"/>
+                <filter string="Late" name="late" domain="[('time_variance_minutes', '>', 0)]"/>
+                <group>
+                    <filter string="Project" name="group_project" context="{'group_by': 'project_id'}"/>
+                    <filter string="Product Family" name="group_family" context="{'group_by': 'family_id'}"/>
+                    <filter string="Month" name="group_month" context="{'group_by': 'date_start:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="dw_cost_variance_report_action" model="ir.actions.act_window">
+        <field name="name">Cost and Time Variance</field>
+        <field name="res_model">dw.cost.variance.report</field>
+        <field name="view_mode">list,pivot,graph</field>
+    </record>
+
+    <record id="dw_over_budget_report_action" model="ir.actions.act_window">
+        <field name="name">Projects Over Budget</field>
+        <field name="res_model">dw.cost.variance.report</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="context">{'search_default_over': 1, 'search_default_group_project': 1}</field>
+    </record>
+
+    <!-- ============ Material consumption ============ -->
+    <record id="dw_material_report_action" model="ir.actions.act_window">
+        <field name="name">Material Consumption</field>
+        <field name="res_model">dw.production.cost.line</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="domain">[('cost_type', 'in', ('material', 'scrap'))]</field>
+        <field name="context">{'search_default_group_type': 1}</field>
+    </record>
+
+    <record id="dw_outsourcing_report_action" model="ir.actions.act_window">
+        <field name="name">Outsourcing</field>
+        <field name="res_model">dw.production.cost.line</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="domain">[('cost_type', 'in', ('outsourcing', 'contractor'))]</field>
+    </record>
+
+    <record id="dw_rework_report_action" model="ir.actions.act_window">
+        <field name="name">Rework</field>
+        <field name="res_model">dw.quality.issue</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('rework_required', '=', True)]</field>
+    </record>
+
+    <!-- ============ Scrap analysis ============ -->
+    <record id="dw_scrap_report_view_pivot" model="ir.ui.view">
+        <field name="name">stock.scrap.pivot.dw</field>
+        <field name="model">stock.scrap</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <pivot string="Scrap Analysis" sample="1">
+                <field name="dw_reason_id" type="row"/>
+                <field name="scrap_qty" type="measure"/>
+                <field name="dw_weight_kg" type="measure"/>
+                <field name="dw_value" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="dw_scrap_report_view_graph" model="ir.ui.view">
+        <field name="name">stock.scrap.graph.dw</field>
+        <field name="model">stock.scrap</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <graph string="Scrap Analysis" type="bar" sample="1">
+                <field name="dw_reason_id"/>
+                <field name="dw_value" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="dw_scrap_report_view_search" model="ir.ui.view">
+        <field name="name">stock.scrap.search.dw</field>
+        <field name="model">stock.scrap</field>
+        <field name="inherit_id" ref="stock.stock_scrap_search_view"/>
+        <field name="arch" type="xml">
+            <field name="product_id" position="after">
+                <field name="dw_reason_id"/>
+                <field name="dw_opening_id"/>
+                <field name="dw_project_id"/>
+            </field>
+            <filter name="product" position="after">
+                <filter string="Scrap Reason" name="group_dw_reason" context="{'group_by': 'dw_reason_id'}"/>
+                <filter string="Operation" name="group_dw_operation" context="{'group_by': 'dw_operation_type_id'}"/>
+                <filter string="Fabrication Project" name="group_dw_project" context="{'group_by': 'dw_project_id'}"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="dw_scrap_report_action" model="ir.actions.act_window">
+        <field name="name">Scrap Analysis</field>
+        <field name="res_model">stock.scrap</field>
+        <field name="view_mode">pivot,graph,list,form</field>
+        <field name="domain">[('dw_reason_id', '!=', False)]</field>
+        <field name="context">{'search_default_group_dw_reason': 1}</field>
+    </record>
+
+    <!-- ============ Quality analysis ============ -->
+    <record id="dw_quality_report_view_pivot" model="ir.ui.view">
+        <field name="name">dw.quality.check.pivot</field>
+        <field name="model">dw.quality.check</field>
+        <field name="arch" type="xml">
+            <pivot string="Quality Analysis" sample="1">
+                <field name="stage" type="row"/>
+                <field name="result" type="col"/>
+                <field name="rework_cost" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="dw_quality_report_view_graph" model="ir.ui.view">
+        <field name="name">dw.quality.check.graph</field>
+        <field name="model">dw.quality.check</field>
+        <field name="arch" type="xml">
+            <graph string="Quality Analysis" type="bar" sample="1">
+                <field name="result"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="dw_quality_report_action" model="ir.actions.act_window">
+        <field name="name">Quality Analysis</field>
+        <field name="res_model">dw.quality.check</field>
+        <field name="view_mode">pivot,graph,list,form</field>
+        <field name="context">{'search_default_group_result': 1}</field>
+    </record>
+
+    <!-- ============ Work center performance ============ -->
+    <record id="dw_workcenter_report_view_pivot" model="ir.ui.view">
+        <field name="name">mrp.workorder.pivot.dw</field>
+        <field name="model">mrp.workorder</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <pivot string="Work Center Performance" sample="1">
+                <field name="workcenter_id" type="row"/>
+                <field name="duration_expected" type="measure"/>
+                <field name="duration" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="dw_workcenter_report_action" model="ir.actions.act_window">
+        <field name="name">Work Center Performance</field>
+        <field name="res_model">mrp.workorder</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="domain">[('dw_opening_id', '!=', False)]</field>
+    </record>
+
+    <!-- ============ Late items ============ -->
+    <record id="dw_late_items_report_action" model="ir.actions.act_window">
+        <field name="name">Late Manufacturing Orders</field>
+        <field name="res_model">dw.cost.variance.report</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="context">{'search_default_late': 1}</field>
+    </record>
+</odoo>

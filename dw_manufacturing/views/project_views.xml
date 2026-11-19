@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="project_project_form_dw" model="ir.ui.view">
+        <field name="name">project.project.form.dw</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Fabrication Profitability" name="dw_profitability"
+                      groups="dw_manufacturing.group_dw_profitability">
+                    <group>
+                        <group string="Revenue">
+                            <field name="dw_currency_id" invisible="1"/>
+                            <field name="dw_expected_revenue" readonly="1"/>
+                            <field name="dw_invoiced_revenue" readonly="1"/>
+                            <field name="dw_internal_transfer_value" readonly="1"/>
+                            <field name="dw_revenue_variance" readonly="1"/>
+                        </group>
+                        <group string="Cost">
+                            <field name="dw_estimated_cost" readonly="1"/>
+                            <field name="dw_actual_cost" readonly="1"/>
+                            <field name="dw_cost_variance" readonly="1"/>
+                            <field name="dw_wip_value" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Result">
+                            <field name="dw_expected_profit" readonly="1"/>
+                            <field name="dw_actual_profit" readonly="1"/>
+                        </group>
+                        <group string="Margin">
+                            <field name="dw_expected_margin_percent" readonly="1" widget="percentage"/>
+                            <field name="dw_actual_margin_percent" readonly="1" widget="percentage"/>
+                            <field name="dw_completion_percent" readonly="1" widget="percentage"/>
+                        </group>
+                    </group>
+                    <div>
+                        <button name="action_dw_view_items" type="object" class="btn-secondary"
+                                string="Manufacturing Items"/>
+                        <field name="dw_opening_count" invisible="1"/>
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

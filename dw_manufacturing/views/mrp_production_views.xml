@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_production_form_dw" model="ir.ui.view">
+        <field name="name">mrp.production.form.dw</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <!-- The extra links belong to mrp.production, so they are injected in
+                 the Miscellaneous page group and never inside a stock.move list. -->
+            <xpath expr="//page[@name='miscellaneous']/group/group[2]/field[@name='origin']" position="after">
+                <field name="dw_opening_id" readonly="1"/>
+                <field name="dw_project_id" readonly="1"/>
+                <field name="dw_sale_order_id" readonly="1"/>
+                <field name="dw_drawing_revision_id" readonly="1"/>
+                <field name="dw_family_id" readonly="1" invisible="not dw_family_id"/>
+                <field name="dw_currency_id" invisible="1"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_dw_view_cost_lines" type="object"
+                        class="oe_stat_button" icon="fa-money"
+                        invisible="dw_cost_line_count == 0">
+                    <field name="dw_cost_line_count" widget="statinfo" string="Cost Lines"/>
+                </button>
+                <button name="action_dw_view_quality_checks" type="object"
+                        class="oe_stat_button" icon="fa-check-square-o"
+                        invisible="dw_quality_check_count == 0">
+                    <field name="dw_quality_check_count" widget="statinfo" string="Quality"/>
+                </button>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Fabrication Cost" name="dw_cost">
+                    <div class="mb-2">
+                        <button name="action_dw_recompute_actual_cost" type="object"
+                                string="Recompute Actual Cost" class="btn-primary"
+                                groups="dw_manufacturing.group_dw_cost_accountant"/>
+                        <button name="action_dw_generate_quality_checks" type="object"
+                                string="Generate Quality Checks" class="btn-secondary"
+                                groups="dw_manufacturing.group_dw_quality"/>
+                        <field name="dw_last_cost_run" readonly="1" class="ms-3"/>
+                    </div>
+                    <group>
+                        <group string="Actual Cost">
+                            <field name="dw_material_cost" readonly="1"/>
+                            <field name="dw_labor_cost" readonly="1"/>
+                            <field name="dw_machine_cost" readonly="1"/>
+                            <field name="dw_outsourcing_cost" readonly="1"/>
+                            <field name="dw_scrap_cost" readonly="1"/>
+                            <field name="dw_overhead_cost" readonly="1"/>
+                            <field name="dw_other_cost" readonly="1"/>
+                            <field name="dw_actual_cost" readonly="1"/>
+                        </group>
+                        <group string="Comparison">
+                            <field name="dw_estimated_cost" readonly="1"/>
+                            <field name="dw_cost_variance" readonly="1"/>
+                            <field name="dw_cost_variance_percent" readonly="1" widget="percentage"/>
+                            <field name="dw_planned_minutes" readonly="1"/>
+                            <field name="dw_actual_minutes" readonly="1"/>
+                            <field name="dw_time_variance_minutes" readonly="1"/>
+                            <field name="dw_planned_weight_kg" readonly="1"/>
+                            <field name="dw_issued_weight_kg" readonly="1"/>
+                            <field name="dw_scrap_weight_kg" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="dw_cost_line_ids" readonly="1">
+                        <list>
+                            <field name="date"/>
+                            <field name="cost_type"/>
+                            <field name="description"/>
+                            <field name="quantity"/>
+                            <field name="unit_price"/>
+                            <field name="amount" sum="Total"/>
+                            <field name="source_key" optional="hide"/>
+                            <field name="state" widget="badge"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Quality" name="dw_quality">
+                    <group>
+                        <field name="dw_quality_state" readonly="1"/>
+                    </group>
+                    <field name="dw_quality_check_ids" readonly="1">
+                        <list decoration-success="result == 'pass'"
+                              decoration-danger="result == 'fail'"
+                              decoration-warning="result == 'rework'">
+                            <field name="name"/>
+                            <field name="stage"/>
+                            <field name="is_mandatory"/>
+                            <field name="result" widget="badge"/>
+                            <field name="state" widget="badge"/>
+                            <field name="inspector_id"/>
+                            <field name="inspection_date"/>
+                        </list>
+                    </field>
+                    <separator string="Off-cuts Produced"/>
+                    <field name="dw_offcut_ids" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="product_id"/>
+                            <field name="length_mm"/>
+                            <field name="quantity"/>
+                            <field name="weight_kg"/>
+                            <field name="state" widget="badge"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="mrp_production_search_dw" model="ir.ui.view">
+        <field name="name">mrp.production.search.dw</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.view_mrp_production_filter"/>
+        <field name="arch" type="xml">
+            <field name="product_id" position="after">
+                <field name="dw_opening_id"/>
+                <field name="dw_project_id"/>
+                <field name="dw_sale_order_id"/>
+                <field name="dw_family_id"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="mrp_production_list_dw" model="ir.ui.view">
+        <field name="name">mrp.production.list.dw</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_tree_view"/>
+        <field name="arch" type="xml">
+            <field name="product_id" position="after">
+                <field name="dw_opening_id" optional="hide"/>
+                <field name="dw_project_id" optional="hide"/>
+                <field name="dw_actual_cost" optional="hide" sum="Actual Cost"/>
+                <field name="dw_cost_variance" optional="hide" sum="Variance"/>
+                <field name="dw_currency_id" column_invisible="1"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="mrp_workorder_list_dw" model="ir.ui.view">
+        <field name="name">mrp.workorder.list.dw</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_editable_view"/>
+        <field name="arch" type="xml">
+            <field name="workcenter_id" position="after">
+                <field name="dw_operation_type_id" optional="hide"/>
+            </field>
+        </field>
+    </record>
+</odoo>

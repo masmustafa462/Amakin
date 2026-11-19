@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_custody_settlement_wizard_form" model="ir.ui.view">
+        <field name="name">custody.settlement.wizard.form</field>
+        <field name="model">custody.settlement.wizard</field>
+        <field name="arch" type="xml">
+            <form string="تسوية العهدة">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="custody_id" readonly="1"/>
+                            <field name="custody_kind" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="settlement_kind"/>
+                            <field name="settlement_date"/>
+                            <field name="description"/>
+                        </group>
+                        <group>
+                            <field name="balance_amount" invisible="custody_kind != 'financial'"/>
+                            <field name="remaining_quantity" invisible="custody_kind != 'material'"/>
+                            <field name="amount"
+                                   invisible="custody_kind != 'financial' or settlement_kind == 'expense'"
+                                   required="custody_kind == 'financial' and settlement_kind != 'expense'"/>
+                            <field name="line_total"
+                                   invisible="not (custody_kind == 'financial' and settlement_kind == 'expense')"/>
+                            <field name="returned_quantity"
+                                   invisible="custody_kind != 'material'"
+                                   required="custody_kind == 'material'"/>
+                            <field name="return_condition" invisible="custody_kind != 'material'"/>
+                        </group>
+                    </group>
+                    <notebook invisible="custody_kind != 'financial' or settlement_kind != 'expense'">
+                        <page string="أسطر التسوية" name="lines">
+                            <field name="line_ids" context="{'default_company_id': company_id, 'default_currency_id': currency_id}">
+                                <list editable="bottom">
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="account_id"
+                                           options="{'no_create': True}"/>
+                                    <field name="amount" sum="الإجمالي"/>
+                                    <field name="tax_id"
+                                           options="{'no_create': True}"/>
+                                    <field name="tax_amount" readonly="1" sum="إجمالي الضريبة"/>
+                                    <field name="analytic_distribution"
+                                           widget="analytic_distribution"
+                                           optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                    <group string="التوجيه المحاسبي" invisible="custody_kind != 'financial'">
+                        <field name="journal_id"/>
+                        <field name="counterpart_account_id"
+                               invisible="settlement_kind == 'expense'"
+                               required="custody_kind == 'financial' and settlement_kind != 'expense'"/>
+                        <field name="tax_id" options="{'no_create': True}"
+                               invisible="settlement_kind == 'expense'"/>
+                        <field name="analytic_distribution" widget="analytic_distribution"
+                               invisible="settlement_kind == 'expense'"/>
+                    </group>
+                    <group string="المرفقات">
+                        <field name="attachment_ids" widget="many2many_binary"/>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_confirm" type="object" string="تأكيد التسوية" class="btn-primary"/>
+                    <button string="إلغاء" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

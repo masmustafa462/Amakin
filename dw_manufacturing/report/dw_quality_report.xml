@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="dw_quality_check_document">
+        <t t-call="web.external_layout">
+            <t t-set="doc" t-value="o.with_context(lang=lang)"/>
+            <div class="page">
+                <t t-call="dw_manufacturing.dw_report_wrapper">
+                    <h2 class="dw-title">Quality Inspection Report</h2>
+                    <div class="dw-subtitle"><span t-field="doc.name"/></div>
+
+                    <table>
+                        <tr>
+                            <th style="width:25%;">Manufacturing Item</th>
+                            <td style="width:25%;"><span t-field="doc.opening_id"/></td>
+                            <th style="width:25%;">Manufacturing Order</th>
+                            <td style="width:25%;"><span t-field="doc.production_id"/></td>
+                        </tr>
+                        <tr>
+                            <th>Product</th>
+                            <td><span t-field="doc.product_id"/></td>
+                            <th>Project</th>
+                            <td><span t-field="doc.project_id"/></td>
+                        </tr>
+                        <tr>
+                            <th>Stage</th>
+                            <td><span t-field="doc.stage"/></td>
+                            <th>Mandatory</th>
+                            <td><span t-field="doc.is_mandatory"/></td>
+                        </tr>
+                        <tr>
+                            <th>Inspector</th>
+                            <td><span t-field="doc.inspector_id"/></td>
+                            <th>Inspection Date</th>
+                            <td><span t-field="doc.inspection_date"/></td>
+                        </tr>
+                        <tr class="dw-total-row">
+                            <th>Result</th>
+                            <td><span t-field="doc.result"/></td>
+                            <th>Release Decision</th>
+                            <td><span t-field="doc.release_decision"/></td>
+                        </tr>
+                    </table>
+
+                    <h3>Tests</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Test</th>
+                                <th>Unit</th>
+                                <th class="dw-num">Target</th>
+                                <th class="dw-num">Min</th>
+                                <th class="dw-num">Max</th>
+                                <th class="dw-num">Measured</th>
+                                <th class="dw-num">Deviation</th>
+                                <th>Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="doc.line_ids" t-as="line">
+                                <td><span t-field="line.name"/></td>
+                                <td><span t-field="line.uom_label"/></td>
+                                <td class="dw-num"><span t-field="line.target_value"/></td>
+                                <td class="dw-num"><span t-field="line.min_value"/></td>
+                                <td class="dw-num"><span t-field="line.max_value"/></td>
+                                <td class="dw-num"><span t-field="line.value_display"/></td>
+                                <td class="dw-num"><span t-field="line.deviation"/></td>
+                                <td><span t-field="line.result"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div t-if="doc.corrective_action">
+                        <h3>Corrective Action</h3>
+                        <div t-field="doc.corrective_action"/>
+                        <p>Owner: <span t-field="doc.responsible_id"/></p>
+                        <p>Rework cost: <span t-field="doc.rework_cost" t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/></p>
+                    </div>
+                    <div t-if="doc.note">
+                        <h3>Notes</h3>
+                        <div t-field="doc.note"/>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="dw_quality_check_pdf">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="user.lang or 'en_US'"/>
+                <t t-call="dw_manufacturing.dw_quality_check_document"/>
+            </t>
+        </t>
+    </template>
+</odoo>

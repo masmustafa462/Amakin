@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_custody_settlement_tree" model="ir.ui.view">
+        <field name="name">employee.custody.settlement.tree</field>
+        <field name="model">employee.custody.settlement</field>
+        <field name="arch" type="xml">
+            <list string="التسويات"
+                  decoration-success="state == 'posted'"
+                  decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="settlement_date"/>
+                <field name="custody_id"/>
+                <field name="employee_id"/>
+                <field name="settlement_kind"/>
+                <field name="custody_kind" optional="hide"/>
+                <field name="amount" widget="monetary" sum="الإجمالي"/>
+                <field name="returned_quantity" sum="إجمالي الكميات"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="move_id"/>
+                <field name="state" widget="badge"/>
+                <field name="company_id" optional="hide" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_custody_settlement_form" model="ir.ui.view">
+        <field name="name">employee.custody.settlement.form</field>
+        <field name="model">employee.custody.settlement</field>
+        <field name="arch" type="xml">
+            <form string="تسوية عهدة">
+                <header>
+                    <button name="action_post" type="object" string="ترحيل"
+                            class="btn-primary" invisible="state != 'draft'"
+                            groups="hr_employee_custody.group_custody_accountant"/>
+                    <button name="action_cancel" type="object" string="إلغاء"
+                            invisible="state == 'cancelled'"
+                            confirm="سيتم عكس القيد المحاسبي إذا كان مرحلاً. متابعة؟"/>
+                    <button name="action_draft" type="object" string="إعادة للمسودة"
+                            invisible="state != 'cancelled'"
+                            groups="hr_employee_custody.group_custody_admin"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,posted"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="custody_id"
+                                   options="{'no_create': True}"
+                                   readonly="state != 'draft'"/>
+                            <field name="employee_id" readonly="1"/>
+                            <field name="custody_kind" readonly="1"/>
+                            <field name="settlement_kind" readonly="state != 'draft'"/>
+                            <field name="settlement_date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="amount"
+                                   invisible="custody_kind != 'financial'"
+                                   readonly="state != 'draft'"/>
+                            <field name="returned_quantity"
+                                   invisible="custody_kind != 'material'"
+                                   readonly="state != 'draft'"/>
+                            <field name="return_condition"
+                                   invisible="custody_kind != 'material'"
+                                   readonly="state != 'draft'"/>
+                            <field name="move_id" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="البيان">
+                            <field name="description" placeholder="البيان..."/>
+                            <field name="notes" placeholder="ملاحظات..."/>
+                        </page>
+                        <page string="أسطر التسوية" name="lines"
+                              invisible="custody_kind != 'financial' or settlement_kind != 'expense'">
+                            <field name="line_ids" readonly="state != 'draft'" context="{'default_company_id': company_id, 'default_currency_id': currency_id}">
+                                <list editable="bottom">
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="account_id"
+                                           options="{'no_create': True}"/>
+                                    <field name="amount" sum="الإجمالي"/>
+                                    <field name="tax_id"
+                                           options="{'no_create': True}"/>
+                                    <field name="tax_amount" readonly="1" sum="إجمالي الضريبة"/>
+                                    <field name="analytic_distribution"
+                                           widget="analytic_distribution"
+                                           optional="hide"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="line_total"/>
+                            </group>
+                        </page>
+                        <page string="المحاسبة" invisible="custody_kind != 'financial'"
+                              groups="hr_employee_custody.group_custody_accountant">
+                            <group>
+                                <group>
+                                    <field name="journal_id" readonly="state != 'draft'"/>
+                                    <field name="counterpart_account_id" readonly="state != 'draft'"/>
+                                    <field name="tax_id"
+                                           options="{'no_create': True}"
+                                           readonly="state != 'draft'"/>
+                                </group>
+                                <group>
+                                    <field name="cash_account_id" readonly="state != 'draft'"/>
+                                    <field name="analytic_distribution"
+                                           widget="analytic_distribution"
+                                           readonly="state != 'draft'"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_custody_settlement_search" model="ir.ui.view">
+        <field name="name">employee.custody.settlement.search</field>
+        <field name="model">employee.custody.settlement</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="custody_id"/>
+                <field name="employee_id"/>
+                <filter string="مرحلة" name="posted" domain="[('state','=','posted')]"/>
+                <filter string="مسودة" name="draft" domain="[('state','=','draft')]"/>
+                <separator/>
+                <filter string="مصروفات" name="expense" domain="[('settlement_kind','=','expense')]"/>
+                <filter string="إرجاع نقدي" name="return" domain="[('settlement_kind','=','return')]"/>
+                <filter string="خصم راتب" name="salary" domain="[('settlement_kind','=','salary')]"/>
+                <filter string="فقد/تلف" name="loss" domain="[('settlement_kind','=','loss')]"/>
+                <!-- Odoo 19: <group> in a search view accepts neither
+                     "string" nor "expand" (rejected by search_view.rng). -->
+                <group>
+                    <filter string="العهدة" name="group_custody" context="{'group_by': 'custody_id'}"/>
+                    <filter string="الموظف" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="النوع" name="group_kind" context="{'group_by': 'settlement_kind'}"/>
+                    <filter string="التاريخ" name="group_date" context="{'group_by': 'settlement_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_employee_custody_settlement" model="ir.actions.act_window">
+        <field name="name">التسويات</field>
+        <field name="res_model">employee.custody.settlement</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_custody_settlement_search"/>
+    </record>
+
+</odoo>

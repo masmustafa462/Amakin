@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Root menu -->
+    <menuitem id="menu_custody_root"
+              name="إدارة العهد"
+              sequence="60"
+              web_icon="hr_employee_custody,static/description/icon.png"
+              groups="hr_employee_custody.group_custody_user"/>
+
+    <!-- Operations -->
+    <menuitem id="menu_custody_operations"
+              name="العهد"
+              parent="menu_custody_root"
+              sequence="10"/>
+
+    <menuitem id="menu_custody_my_custodies"
+              name="عهدي"
+              parent="menu_custody_operations"
+              action="action_employee_custody_my"
+              sequence="1"/>
+
+    <menuitem id="menu_custody_all"
+              name="جميع العهد"
+              parent="menu_custody_operations"
+              action="action_employee_custody"
+              sequence="5"
+              groups="hr_employee_custody.group_custody_officer"/>
+
+    <menuitem id="menu_custody_overdue"
+              name="العهد المتأخرة"
+              parent="menu_custody_operations"
+              action="action_employee_custody_overdue"
+              sequence="10"
+              groups="hr_employee_custody.group_custody_officer"/>
+
+    <menuitem id="menu_custody_settlements"
+              name="التسويات"
+              parent="menu_custody_operations"
+              action="action_employee_custody_settlement"
+              sequence="20"
+              groups="hr_employee_custody.group_custody_officer"/>
+
+    <menuitem id="menu_custody_return_wizard"
+              name="إرجاع عهدة عينية"
+              parent="menu_custody_operations"
+              action="action_custody_return_wizard"
+              sequence="25"
+              groups="hr_employee_custody.group_custody_officer"/>
+
+    <!-- Reports -->
+    <menuitem id="menu_custody_reports"
+              name="التقارير"
+              parent="menu_custody_root"
+              sequence="20"
+              groups="hr_employee_custody.group_custody_officer"/>
+
+    <menuitem id="menu_custody_report_status"
+              name="حالة العهد"
+              parent="menu_custody_reports"
+              action="action_employee_custody"
+              sequence="10"/>
+
+    <menuitem id="menu_custody_report_statement_xlsx"
+              name="كشف حركة العهد (Excel)"
+              parent="menu_custody_reports"
+              action="action_custody_statement_report_wizard"
+              sequence="20"/>
+
+    <!-- Configuration -->
+    <menuitem id="menu_custody_configuration"
+              name="الإعدادات"
+              parent="menu_custody_root"
+              sequence="90"
+              groups="hr_employee_custody.group_custody_manager"/>
+
+    <menuitem id="menu_custody_config_types"
+              name="أنواع العهد"
+              parent="menu_custody_configuration"
+              action="action_custody_type"
+              sequence="10"/>
+
+    <menuitem id="menu_custody_config_categories"
+              name="تصنيفات العهد"
+              parent="menu_custody_configuration"
+              action="action_custody_category"
+              sequence="20"/>
+
+    <menuitem id="menu_custody_config_settings"
+              name="إعدادات الوحدة"
+              parent="menu_custody_configuration"
+              action="action_custody_config_settings"
+              sequence="30"/>
+
+</odoo>

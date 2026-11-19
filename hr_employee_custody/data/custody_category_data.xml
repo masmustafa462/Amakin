@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="category_financial" model="employee.custody.category">
+        <field name="name">عهد مالية</field>
+        <field name="code">FIN</field>
+        <field name="sequence">10</field>
+        <field name="color">1</field>
+    </record>
+
+    <record id="category_it_equipment" model="employee.custody.category">
+        <field name="name">أجهزة ومعدات</field>
+        <field name="code">IT</field>
+        <field name="sequence">20</field>
+        <field name="color">4</field>
+    </record>
+
+    <record id="category_vehicles" model="employee.custody.category">
+        <field name="name">مركبات</field>
+        <field name="code">VEH</field>
+        <field name="sequence">30</field>
+        <field name="color">3</field>
+    </record>
+
+    <record id="category_tools" model="employee.custody.category">
+        <field name="name">أدوات وعدد</field>
+        <field name="code">TOL</field>
+        <field name="sequence">40</field>
+        <field name="color">6</field>
+    </record>
+
+</odoo>

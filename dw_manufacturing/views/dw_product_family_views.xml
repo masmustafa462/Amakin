@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dw_product_family_view_form" model="ir.ui.view">
+        <field name="name">dw.product.family.form</field>
+        <field name="model">dw.product.family</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_component_rules" type="object"
+                                class="oe_stat_button" icon="fa-list-ul">
+                            <field name="component_rule_count" widget="statinfo" string="Rules"/>
+                        </button>
+                        <button name="action_view_items" type="object"
+                                class="oe_stat_button" icon="fa-cubes">
+                            <field name="item_count" widget="statinfo" string="Items"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <field name="uses_default_dimensions" invisible="1"/>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="not uses_default_dimensions">
+                        No dimension is selected for this family, so manufacturing items show the
+                        standard set for the chosen product kind. Pick the dimensions this product
+                        really needs in the Dimensions tab, or apply the standard set now.
+                        <button name="action_apply_default_dimensions" type="object"
+                                class="btn btn-sm btn-primary ms-2"
+                                string="Apply the standard dimensions"/>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Steel Fence"/></h1>
+                        <h3><field name="name_ar" placeholder="Arabic name"/></h3>
+                    </div>
+                    <group>
+                        <group string="Identification">
+                            <field name="code"/>
+                            <field name="product_kind"/>
+                            <field name="sequence"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Units of Measure">
+                            <field name="uom_id"/>
+                            <field name="dimension_uom_id"/>
+                            <field name="weight_uom_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Quantity and Weight">
+                            <field name="quantity_method"/>
+                            <field name="weight_method"/>
+                            <field name="weight_factor"
+                                   invisible="weight_method in ('components', 'manual')"/>
+                        </group>
+                        <group string="Pricing">
+                            <field name="pricing_method"/>
+                            <field name="default_markup_percent"
+                                   invisible="pricing_method != 'cost_plus'"/>
+                            <field name="default_price_unit"
+                                   invisible="pricing_method == 'cost_plus'"/>
+                            <field name="default_waste_percent"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Dimensions" name="dimensions">
+                            <group>
+                                <field name="dimension_ids" widget="many2many_tags"
+                                       options="{'no_create': True}"/>
+                                <field name="required_dimension_ids" widget="many2many_tags"
+                                       options="{'no_create': True}"
+                                       domain="[('id', 'in', dimension_ids)]"/>
+                            </group>
+                            <div class="text-muted">
+                                The manufacturing item form shows exactly the dimensions selected
+                                here. Adding a new family therefore needs no development.
+                                When nothing is selected the standard set for the chosen product
+                                kind is used instead, so the item form is never empty.
+                            </div>
+                            <div class="mt-2">
+                                <button name="action_apply_default_dimensions" type="object"
+                                        class="btn btn-secondary"
+                                        string="Apply the standard set for this product kind"/>
+                            </div>
+                        </page>
+                        <page string="Defaults" name="defaults">
+                            <group>
+                                <group>
+                                    <field name="default_product_id"/>
+                                    <field name="metal_type_id"/>
+                                    <field name="finish_type_id"/>
+                                </group>
+                                <group>
+                                    <field name="quality_template_id"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Operations" name="operations">
+                            <field name="operation_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="operation_type_id"/>
+                                    <field name="workcenter_id"/>
+                                    <field name="time_mode"/>
+                                    <field name="time_value"/>
+                                    <field name="setup_minutes"/>
+                                    <field name="is_outsourced" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Component Rules" name="rules">
+                            <field name="component_rule_ids" context="{'default_family_id': id}">
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="component_product_id"/>
+                                    <field name="component_kind"/>
+                                    <field name="calc_method"/>
+                                    <field name="formula_preview"/>
+                                    <field name="waste_percent"/>
+                                    <field name="active" widget="boolean_toggle" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Manufacturing Instructions" name="instructions">
+                            <field name="manufacturing_notes"/>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="dw_product_family_view_list" model="ir.ui.view">
+        <field name="name">dw.product.family.list</field>
+        <field name="model">dw.product.family</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="name_ar" optional="show"/>
+                <field name="product_kind"/>
+                <field name="quantity_method"/>
+                <field name="pricing_method"/>
+                <field name="component_rule_count"/>
+                <field name="uses_default_dimensions" optional="show"/>
+                <field name="item_count" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="active" widget="boolean_toggle" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_product_family_view_search" model="ir.ui.view">
+        <field name="name">dw.product.family.search</field>
+        <field name="model">dw.product.family</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="name_ar"/>
+                <field name="code"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Product Kind" name="group_kind" context="{'group_by': 'product_kind'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="dw_product_family_action" model="ir.actions.act_window">
+        <field name="name">Product Families</field>
+        <field name="res_model">dw.product.family</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first metal product family</p>
+            <p>
+                A family decides which dimensions are asked for, how quantity and weight are
+                derived, which operations are planned and which quality template applies.
+            </p>
+        </field>
+    </record>
+</odoo>

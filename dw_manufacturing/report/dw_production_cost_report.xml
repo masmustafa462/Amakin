@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="dw_production_cost_card_document">
+        <t t-call="web.external_layout">
+            <t t-set="doc" t-value="o.with_context(lang=lang)"/>
+            <div class="page">
+                <t t-call="dw_manufacturing.dw_report_wrapper">
+                    <h2 class="dw-title">Manufacturing Order Cost Card</h2>
+                    <div class="dw-subtitle"><span t-field="doc.name"/></div>
+
+                    <table>
+                        <tr>
+                            <th style="width:25%;">Product</th>
+                            <td style="width:25%;"><span t-field="doc.product_id"/></td>
+                            <th style="width:25%;">Quantity</th>
+                            <td style="width:25%;" class="dw-num"><span t-field="doc.product_qty"/></td>
+                        </tr>
+                        <tr>
+                            <th>Manufacturing Item</th>
+                            <td><span t-field="doc.dw_opening_id"/></td>
+                            <th>Project</th>
+                            <td><span t-field="doc.dw_project_id"/></td>
+                        </tr>
+                        <tr>
+                            <th>Sales Order</th>
+                            <td><span t-field="doc.dw_sale_order_id"/></td>
+                            <th>Status</th>
+                            <td><span t-field="doc.state"/></td>
+                        </tr>
+                    </table>
+
+                    <h3>Cost Summary</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cost Element</th>
+                                <th class="dw-num">Estimated</th>
+                                <th class="dw-num">Actual</th>
+                                <th class="dw-num">Variance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Material</td>
+                                <td class="dw-num"><span t-esc="doc.dw_opening_id.material_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-field="doc.dw_material_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-esc="doc.dw_material_cost - doc.dw_opening_id.material_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                            </tr>
+                            <tr>
+                                <td>Labour</td>
+                                <td class="dw-num"><span t-esc="doc.dw_opening_id.labor_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-field="doc.dw_labor_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-esc="doc.dw_labor_cost - doc.dw_opening_id.labor_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                            </tr>
+                            <tr>
+                                <td>Machine</td>
+                                <td class="dw-num"><span t-esc="doc.dw_opening_id.machine_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-field="doc.dw_machine_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-esc="doc.dw_machine_cost - doc.dw_opening_id.machine_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                            </tr>
+                            <tr>
+                                <td>Outsourcing</td>
+                                <td class="dw-num"><span t-esc="doc.dw_opening_id.subcontract_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-field="doc.dw_outsourcing_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-esc="doc.dw_outsourcing_cost - doc.dw_opening_id.subcontract_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                            </tr>
+                            <tr>
+                                <td>Scrap</td>
+                                <td class="dw-num">-</td>
+                                <td class="dw-num"><span t-field="doc.dw_scrap_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-field="doc.dw_scrap_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                            </tr>
+                            <tr>
+                                <td>Overhead</td>
+                                <td class="dw-num"><span t-esc="doc.dw_opening_id.overhead_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-field="doc.dw_overhead_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-esc="doc.dw_overhead_cost - doc.dw_opening_id.overhead_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                            </tr>
+                            <tr>
+                                <td>Other</td>
+                                <td class="dw-num">-</td>
+                                <td class="dw-num"><span t-field="doc.dw_other_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-field="doc.dw_other_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                            </tr>
+                            <tr class="dw-total-row">
+                                <td>Total</td>
+                                <td class="dw-num"><span t-field="doc.dw_estimated_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-field="doc.dw_actual_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-field="doc.dw_cost_variance" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Time and Weight</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th class="dw-num">Planned</th>
+                                <th class="dw-num">Actual</th>
+                                <th class="dw-num">Variance</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Minutes</td>
+                                <td class="dw-num"><span t-field="doc.dw_planned_minutes"/></td>
+                                <td class="dw-num"><span t-field="doc.dw_actual_minutes"/></td>
+                                <td class="dw-num"><span t-field="doc.dw_time_variance_minutes"/></td>
+                            </tr>
+                            <tr>
+                                <td>Weight (kg)</td>
+                                <td class="dw-num"><span t-field="doc.dw_planned_weight_kg"/></td>
+                                <td class="dw-num"><span t-field="doc.dw_issued_weight_kg"/></td>
+                                <td class="dw-num"><span t-esc="doc.dw_issued_weight_kg - doc.dw_planned_weight_kg"/></td>
+                            </tr>
+                            <tr>
+                                <td>Scrap Weight (kg)</td>
+                                <td class="dw-num">-</td>
+                                <td class="dw-num"><span t-field="doc.dw_scrap_weight_kg"/></td>
+                                <td class="dw-num"><span t-field="doc.dw_scrap_weight_kg"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Cost Detail</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                                <th class="dw-num">Qty</th>
+                                <th class="dw-num">Unit Price</th>
+                                <th class="dw-num">Value</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="doc.dw_cost_line_ids.filtered(lambda l: l.state != 'cancel')" t-as="line">
+                                <td><span t-field="line.date"/></td>
+                                <td><span t-field="line.cost_type"/></td>
+                                <td><span t-field="line.description"/></td>
+                                <td class="dw-num"><span t-field="line.quantity"/></td>
+                                <td class="dw-num"><span t-field="line.unit_price" t-options='{"widget": "monetary", "display_currency": line.currency_id}'/></td>
+                                <td class="dw-num"><span t-field="line.amount" t-options='{"widget": "monetary", "display_currency": line.currency_id}'/></td>
+                                <td><span t-field="line.state"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="dw_production_cost_card">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="user.lang or 'en_US'"/>
+                <t t-call="dw_manufacturing.dw_production_cost_card_document"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- ============ Cost variance report ============ -->
+    <template id="dw_cost_variance_report_document">
+        <t t-call="web.external_layout">
+            <t t-set="doc" t-value="o.with_context(lang=lang)"/>
+            <div class="page">
+                <t t-call="dw_manufacturing.dw_report_wrapper">
+                    <h2 class="dw-title">Cost Variance Report</h2>
+                    <div class="dw-subtitle"><span t-field="doc.name"/></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Element</th>
+                                <th class="dw-num">Estimated</th>
+                                <th class="dw-num">Actual</th>
+                                <th class="dw-num">Variance</th>
+                                <th class="dw-num">Variance %</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Total Cost</td>
+                                <td class="dw-num"><span t-field="doc.dw_estimated_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-field="doc.dw_actual_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-field="doc.dw_cost_variance" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td class="dw-num"><span t-field="doc.dw_cost_variance_percent"/> %</td>
+                            </tr>
+                            <tr>
+                                <td>Time (minutes)</td>
+                                <td class="dw-num"><span t-field="doc.dw_planned_minutes"/></td>
+                                <td class="dw-num"><span t-field="doc.dw_actual_minutes"/></td>
+                                <td class="dw-num"><span t-field="doc.dw_time_variance_minutes"/></td>
+                                <td class="dw-num"></td>
+                            </tr>
+                            <tr>
+                                <td>Weight (kg)</td>
+                                <td class="dw-num"><span t-field="doc.dw_planned_weight_kg"/></td>
+                                <td class="dw-num"><span t-field="doc.dw_issued_weight_kg"/></td>
+                                <td class="dw-num"><span t-esc="doc.dw_issued_weight_kg - doc.dw_planned_weight_kg"/></td>
+                                <td class="dw-num"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="dw_cost_variance_report_pdf">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="user.lang or 'en_US'"/>
+                <t t-call="dw_manufacturing.dw_cost_variance_report_document"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- ============ Scrap report ============ -->
+    <template id="dw_scrap_report_document">
+        <t t-call="web.external_layout">
+            <t t-set="doc" t-value="o.with_context(lang=lang)"/>
+            <div class="page">
+                <t t-call="dw_manufacturing.dw_report_wrapper">
+                    <h2 class="dw-title">Scrap Report</h2>
+                    <div class="dw-subtitle"><span t-field="doc.name"/></div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Material</th>
+                                <th>Reason</th>
+                                <th>Operation</th>
+                                <th class="dw-num">Quantity</th>
+                                <th class="dw-num">Weight (kg)</th>
+                                <th class="dw-num">Value</th>
+                                <th>Planned</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="doc.scrap_ids.filtered(lambda s: s.state == 'done')" t-as="scrap">
+                                <td><span t-field="scrap.name"/></td>
+                                <td><span t-field="scrap.product_id"/></td>
+                                <td><span t-field="scrap.dw_reason_id"/></td>
+                                <td><span t-field="scrap.dw_operation_type_id"/></td>
+                                <td class="dw-num"><span t-field="scrap.scrap_qty"/></td>
+                                <td class="dw-num"><span t-field="scrap.dw_weight_kg"/></td>
+                                <td class="dw-num"><span t-field="scrap.dw_value" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td><span t-field="scrap.dw_is_planned"/></td>
+                            </tr>
+                            <tr class="dw-total-row">
+                                <td colspan="5">Total</td>
+                                <td class="dw-num"><span t-field="doc.dw_scrap_weight_kg"/></td>
+                                <td class="dw-num"><span t-field="doc.dw_scrap_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Reusable Off-cuts</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Material</th>
+                                <th class="dw-num">Length (mm)</th>
+                                <th class="dw-num">Quantity</th>
+                                <th class="dw-num">Weight (kg)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="doc.dw_offcut_ids" t-as="offcut">
+                                <td><span t-field="offcut.name"/></td>
+                                <td><span t-field="offcut.product_id"/></td>
+                                <td class="dw-num"><span t-field="offcut.length_mm"/></td>
+                                <td class="dw-num"><span t-field="offcut.quantity"/></td>
+                                <td class="dw-num"><span t-field="offcut.weight_kg"/></td>
+                                <td><span t-field="offcut.state"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="dw_scrap_report_pdf">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="user.lang or 'en_US'"/>
+                <t t-call="dw_manufacturing.dw_scrap_report_document"/>
+            </t>
+        </t>
+    </template>
+</odoo>

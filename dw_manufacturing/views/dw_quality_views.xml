@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================= Templates ================= -->
+    <record id="dw_quality_template_view_form" model="ir.ui.view">
+        <field name="name">dw.quality.template.form</field>
+        <field name="model">dw.quality.template</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Final inspection - steel door"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="family_id"/>
+                            <field name="stage"/>
+                            <field name="operation_type_id"
+                                   invisible="stage not in ('in_process', 'post_operation')"/>
+                        </group>
+                        <group>
+                            <field name="is_mandatory"/>
+                            <field name="sequence"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Tests" name="tests">
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="measure_type"/>
+                                    <field name="uom_label"/>
+                                    <field name="target_value" invisible="measure_type != 'numeric'"/>
+                                    <field name="min_value" invisible="measure_type != 'numeric'"/>
+                                    <field name="max_value" invisible="measure_type != 'numeric'"/>
+                                    <field name="tolerance" invisible="measure_type != 'numeric'"/>
+                                    <field name="expected_boolean" invisible="measure_type != 'boolean'"/>
+                                    <field name="allowed_values" invisible="measure_type != 'selection'"/>
+                                    <field name="is_mandatory"/>
+                                    <field name="is_blocking"/>
+                                    <field name="instruction" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="dw_quality_template_view_list" model="ir.ui.view">
+        <field name="name">dw.quality.template.list</field>
+        <field name="model">dw.quality.template</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code" optional="hide"/>
+                <field name="family_id"/>
+                <field name="stage"/>
+                <field name="is_mandatory"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="active" widget="boolean_toggle" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_quality_template_action" model="ir.actions.act_window">
+        <field name="name">Quality Templates</field>
+        <field name="res_model">dw.quality.template</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ================= Checks ================= -->
+    <record id="dw_quality_check_view_form" model="ir.ui.view">
+        <field name="name">dw.quality.check.form</field>
+        <field name="model">dw.quality.check</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_load_template" type="object" string="Load Template"
+                            invisible="state != 'todo' or not template_id"/>
+                    <button name="action_validate" type="object" string="Validate"
+                            class="btn-primary" invisible="state != 'todo'"
+                            groups="dw_manufacturing.group_dw_quality"/>
+                    <button name="action_reset" type="object" string="Reset"
+                            invisible="state != 'done'"
+                            groups="dw_manufacturing.group_dw_quality"/>
+                    <field name="state" widget="statusbar" statusbar_visible="todo,done"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Passed" bg_color="text-bg-success"
+                            invisible="result != 'pass'"/>
+                    <widget name="web_ribbon" title="Rejected" bg_color="text-bg-danger"
+                            invisible="result != 'fail'"/>
+                    <widget name="web_ribbon" title="Rework" bg_color="text-bg-warning"
+                            invisible="result != 'rework'"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Scope">
+                            <field name="template_id"/>
+                            <field name="stage"/>
+                            <field name="opening_id"/>
+                            <field name="production_id"/>
+                            <field name="workorder_id"/>
+                            <field name="picking_id"/>
+                            <field name="product_id"/>
+                        </group>
+                        <group string="Inspection">
+                            <field name="is_mandatory"/>
+                            <field name="inspector_id"/>
+                            <field name="inspection_date"/>
+                            <field name="result" readonly="1" widget="badge"/>
+                            <field name="release_decision"/>
+                            <field name="project_id"/>
+                            <field name="partner_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Tests" name="tests">
+                            <field name="line_ids">
+                                <list editable="bottom"
+                                      decoration-success="result == 'pass'"
+                                      decoration-danger="result == 'fail'">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name" readonly="1"/>
+                                    <field name="measure_type" readonly="1"/>
+                                    <field name="uom_label" readonly="1" optional="show"/>
+                                    <field name="target_value" readonly="1" optional="show"/>
+                                    <field name="min_value" readonly="1" optional="show"/>
+                                    <field name="max_value" readonly="1" optional="show"/>
+                                    <field name="measured_value" invisible="measure_type != 'numeric'"/>
+                                    <field name="boolean_value" invisible="measure_type != 'boolean'"/>
+                                    <field name="text_value" invisible="measure_type == 'numeric' or measure_type == 'boolean'"/>
+                                    <field name="deviation" readonly="1" optional="show"/>
+                                    <field name="is_mandatory" readonly="1" optional="hide"/>
+                                    <field name="is_blocking" readonly="1" optional="hide"/>
+                                    <field name="result" readonly="1" widget="badge"/>
+                                    <field name="note" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Corrective Action" name="action">
+                            <group>
+                                <field name="corrective_action"/>
+                                <field name="responsible_id"/>
+                                <field name="rework_cost"/>
+                            </group>
+                            <separator string="Issues"/>
+                            <field name="issue_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="severity" widget="badge"/>
+                                    <field name="state" widget="badge"/>
+                                    <field name="responsible_id"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Attachments" name="attachments">
+                            <field name="attachment_ids" widget="many2many_binary" nolabel="1"/>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="dw_quality_check_view_list" model="ir.ui.view">
+        <field name="name">dw.quality.check.list</field>
+        <field name="model">dw.quality.check</field>
+        <field name="arch" type="xml">
+            <list decoration-success="result == 'pass'"
+                  decoration-warning="result == 'rework'"
+                  decoration-danger="result == 'fail'">
+                <field name="name"/>
+                <field name="stage"/>
+                <field name="opening_id" optional="show"/>
+                <field name="production_id" optional="show"/>
+                <field name="project_id" optional="hide"/>
+                <field name="product_id" optional="hide"/>
+                <field name="is_mandatory"/>
+                <field name="inspector_id"/>
+                <field name="inspection_date"/>
+                <field name="result" widget="badge"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_quality_check_view_search" model="ir.ui.view">
+        <field name="name">dw.quality.check.search</field>
+        <field name="model">dw.quality.check</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="opening_id"/>
+                <field name="production_id"/>
+                <field name="project_id"/>
+                <filter string="To Do" name="todo" domain="[('state', '=', 'todo')]"/>
+                <filter string="Failed" name="failed" domain="[('result', '=', 'fail')]"/>
+                <filter string="Needs Rework" name="rework" domain="[('result', '=', 'rework')]"/>
+                <group>
+                    <filter string="Stage" name="group_stage" context="{'group_by': 'stage'}"/>
+                    <filter string="Result" name="group_result" context="{'group_by': 'result'}"/>
+                    <filter string="Project" name="group_project" context="{'group_by': 'project_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="dw_quality_check_action" model="ir.actions.act_window">
+        <field name="name">Quality Checks</field>
+        <field name="res_model">dw.quality.check</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ================= Issues ================= -->
+    <record id="dw_quality_issue_view_form" model="ir.ui.view">
+        <field name="name">dw.quality.issue.form</field>
+        <field name="model">dw.quality.issue</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_close" type="object" string="Close Issue"
+                            class="btn-primary" invisible="state == 'done'"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="new,analysis,action,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="check_id"/>
+                            <field name="opening_id"/>
+                            <field name="production_id"/>
+                            <field name="project_id"/>
+                        </group>
+                        <group>
+                            <field name="severity"/>
+                            <field name="responsible_id"/>
+                            <field name="deadline"/>
+                            <field name="rework_required"/>
+                            <field name="rework_cost"/>
+                            <field name="closed_date" readonly="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <group string="Description">
+                        <field name="description" nolabel="1" colspan="2"/>
+                    </group>
+                    <group string="Root Cause">
+                        <field name="root_cause" nolabel="1" colspan="2"/>
+                    </group>
+                    <group string="Corrective Action">
+                        <field name="corrective_action" nolabel="1" colspan="2"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="dw_quality_issue_view_list" model="ir.ui.view">
+        <field name="name">dw.quality.issue.list</field>
+        <field name="model">dw.quality.issue</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="severity == 'critical'"
+                  decoration-warning="severity == 'major'">
+                <field name="name"/>
+                <field name="opening_id" optional="show"/>
+                <field name="production_id" optional="show"/>
+                <field name="project_id" optional="hide"/>
+                <field name="severity" widget="badge"/>
+                <field name="rework_required"/>
+                <field name="rework_cost" sum="Rework Cost"/>
+                <field name="responsible_id"/>
+                <field name="state" widget="badge"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_quality_issue_action" model="ir.actions.act_window">
+        <field name="name">Quality Issues</field>
+        <field name="res_model">dw.quality.issue</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

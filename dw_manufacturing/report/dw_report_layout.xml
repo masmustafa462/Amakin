@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!--
+        Shared wrapper for every Metal Fabrication PDF report.
+
+        It applies the module font and switches the whole document to
+        right to left as soon as the printing language is Arabic, so no report
+        template has to deal with direction on its own.
+    -->
+    <template id="dw_report_wrapper">
+        <t t-set="dw_lang" t-value="(env.context.get('lang') or user.lang or 'en_US')"/>
+        <t t-set="dw_is_rtl" t-value="dw_lang.startswith('ar')"/>
+        <div t-attf-class="dw-report #{dw_is_rtl and 'dw-rtl' or ''}"
+             t-att-dir="dw_is_rtl and 'rtl' or 'ltr'">
+            <t t-out="0"/>
+        </div>
+    </template>
+
+    <template id="dw_report_header">
+        <t t-set="company" t-value="company or env.company"/>
+        <table class="dw-meta" style="width:100%;">
+            <tr>
+                <td style="width:60%;">
+                    <strong t-out="company.name"/><br/>
+                    <span t-out="company.partner_id.contact_address_inline or ''"/>
+                    <span t-if="company.vat"><br/>VAT: <span t-out="company.vat"/></span>
+                </td>
+                <td style="width:40%; text-align:center;">
+                    <img t-if="company.logo" t-att-src="image_data_uri(company.logo)"
+                         style="max-height:60px;" alt="Logo"/>
+                </td>
+            </tr>
+        </table>
+        <hr/>
+    </template>
+</odoo>

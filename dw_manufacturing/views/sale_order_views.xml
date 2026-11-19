@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sale_order_form_dw" model="ir.ui.view">
+        <field name="name">sale.order.form.dw</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="dw_is_manufacturing_quote"/>
+                <field name="dw_relationship" invisible="not dw_is_manufacturing_quote"/>
+                <field name="dw_project_id" invisible="not dw_is_manufacturing_quote"/>
+                <field name="dw_auto_create_project"
+                       invisible="not dw_is_manufacturing_quote or dw_project_id"/>
+            </xpath>
+            <xpath expr="//page[@name='order_lines']" position="after">
+                <page string="Manufacturing Items" name="dw_openings"
+                      invisible="not dw_is_manufacturing_quote">
+                    <field name="dw_opening_ids" context="{'default_sale_order_id': id}">
+                        <list>
+                            <field name="sequence" widget="handle"/>
+                            <field name="name" readonly="1"/>
+                            <field name="family_id"/>
+                            <field name="description"/>
+                            <field name="location"/>
+                            <field name="finished_product_id"/>
+                            <field name="length_mm" optional="hide"/>
+                            <field name="width_mm" optional="show"/>
+                            <field name="height_mm" optional="show"/>
+                            <field name="quantity"/>
+                            <field name="estimated_cost" readonly="1" optional="show" sum="Cost"/>
+                            <field name="selling_price_unit"/>
+                            <field name="expected_profit" readonly="1" optional="show" sum="Profit"/>
+                            <field name="state" widget="badge"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <group class="oe_subtotal_footer">
+                        <field name="dw_total_weight_kg" readonly="1"/>
+                        <field name="dw_estimated_cost" readonly="1"/>
+                        <field name="dw_actual_cost" readonly="1"/>
+                        <field name="dw_expected_profit" readonly="1"/>
+                        <field name="dw_actual_profit" readonly="1"
+                               groups="dw_manufacturing.group_dw_profitability"/>
+                        <field name="dw_internal_transfer_value" readonly="1"
+                               invisible="dw_relationship != 'main_same_entity'"/>
+                    </group>
+                    <div>
+                        <button name="action_dw_create_manufacturing_orders" type="object"
+                                string="Create Manufacturing Orders" class="btn-secondary"
+                                invisible="state not in ('sale', 'done')"/>
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="sale_order_view_search_dw" model="ir.ui.view">
+        <field name="name">sale.order.search.dw</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.sale_order_view_search_inherit_quotation"/>
+        <field name="arch" type="xml">
+            <filter name="my_quotation" position="after">
+                <separator/>
+                <filter string="Metal Fabrication" name="dw_manufacturing"
+                        domain="[('dw_is_manufacturing_quote', '=', True)]"/>
+            </filter>
+        </field>
+    </record>
+</odoo>

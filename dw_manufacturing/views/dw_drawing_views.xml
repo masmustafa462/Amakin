@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dw_drawing_view_form" model="ir.ui.view">
+        <field name="name">dw.drawing.form</field>
+        <field name="model">dw.drawing</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_revisions" type="object"
+                                class="oe_stat_button" icon="fa-history">
+                            <field name="revision_count" widget="statinfo" string="Revisions"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="DRW-0001"/></h1>
+                        <h3><field name="title" placeholder="Drawing title"/></h3>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="family_id"/>
+                            <field name="project_id"/>
+                            <field name="partner_id"/>
+                        </group>
+                        <group>
+                            <field name="current_revision" readonly="1"/>
+                            <field name="state" readonly="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Revisions" name="revisions">
+                            <field name="revision_ids" context="{'default_drawing_id': id}">
+                                <list decoration-success="state == 'released'"
+                                      decoration-muted="state in ('superseded', 'obsolete')">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="revision"/>
+                                    <field name="revision_date"/>
+                                    <field name="prepared_by"/>
+                                    <field name="approved_by"/>
+                                    <field name="change_reason" optional="show"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="dw_drawing_view_list" model="ir.ui.view">
+        <field name="name">dw.drawing.list</field>
+        <field name="model">dw.drawing</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="title"/>
+                <field name="family_id" optional="show"/>
+                <field name="project_id" optional="show"/>
+                <field name="partner_id" optional="hide"/>
+                <field name="current_revision"/>
+                <field name="revision_count"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_drawing_revision_view_form" model="ir.ui.view">
+        <field name="name">dw.drawing.revision.form</field>
+        <field name="model">dw.drawing.revision</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_set_review" type="object" string="Send to Review"
+                            invisible="state != 'draft'"/>
+                    <button name="action_release" type="object" string="Release"
+                            class="btn-primary" invisible="state not in ('draft', 'review')"
+                            groups="dw_manufacturing.group_dw_supervisor"/>
+                    <button name="action_obsolete" type="object" string="Set Obsolete"
+                            invisible="state in ('obsolete',)"
+                            groups="dw_manufacturing.group_dw_manager"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,review,released,superseded"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="revision"/>
+                        <h1><field name="revision" placeholder="Rev A"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="drawing_id"/>
+                            <field name="revision_date"/>
+                            <field name="prepared_by"/>
+                        </group>
+                        <group>
+                            <field name="approved_by" readonly="1"/>
+                            <field name="approval_date" readonly="1"/>
+                            <field name="sequence"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group string="Files">
+                        <field name="attachment_ids" widget="many2many_binary" nolabel="1" colspan="2"/>
+                    </group>
+                    <group string="Change Reason">
+                        <field name="change_reason" nolabel="1" colspan="2"/>
+                    </group>
+                    <field name="note" placeholder="Notes..."/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="dw_drawing_revision_view_list" model="ir.ui.view">
+        <field name="name">dw.drawing.revision.list</field>
+        <field name="model">dw.drawing.revision</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'released'"
+                  decoration-muted="state in ('superseded', 'obsolete')">
+                <field name="drawing_id"/>
+                <field name="revision"/>
+                <field name="revision_date"/>
+                <field name="prepared_by"/>
+                <field name="approved_by"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_drawing_action" model="ir.actions.act_window">
+        <field name="name">Drawings</field>
+        <field name="res_model">dw.drawing</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="dw_drawing_revision_action" model="ir.actions.act_window">
+        <field name="name">Drawing Revisions</field>
+        <field name="res_model">dw.drawing.revision</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

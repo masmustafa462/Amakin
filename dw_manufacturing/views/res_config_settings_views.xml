@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_dw" model="ir.ui.view">
+        <field name="name">res.config.settings.form.dw</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="Metal Fabrication" name="dw_manufacturing"
+                     logo="/base/static/description/settings.png"
+                     groups="dw_manufacturing.group_dw_manager">
+                    <block title="Costing" name="dw_costing">
+                        <setting string="Work center rate includes labour"
+                                 help="Enable when the work center cost per hour is already an all-in rate. The engine then stops posting a separate machine cost line.">
+                            <field name="dw_workcenter_cost_is_total"/>
+                        </setting>
+                        <setting string="Allow updating approved cost lines"
+                                 help="When disabled an approved cost line keeps its amount and every recomputation only writes an audit revision.">
+                            <field name="dw_allow_update_approved_cost"/>
+                        </setting>
+                        <setting string="Revenue reported including tax">
+                            <field name="dw_revenue_includes_tax"/>
+                        </setting>
+                    </block>
+                    <block title="Quality" name="dw_quality_block">
+                        <setting string="Block manufacturing order on failed mandatory check">
+                            <field name="dw_block_on_quality_failure"/>
+                        </setting>
+                    </block>
+                    <block title="Alert Thresholds" name="dw_alerts">
+                        <setting string="Cost overrun alert">
+                            <field name="dw_cost_overrun_percent"/> %
+                        </setting>
+                        <setting string="Scrap alert">
+                            <field name="dw_scrap_percent_limit"/> %
+                        </setting>
+                        <setting string="Minimum margin">
+                            <field name="dw_min_margin_percent"/> %
+                        </setting>
+                        <setting string="Time overrun alert">
+                            <field name="dw_time_overrun_percent"/> %
+                        </setting>
+                        <setting string="Require a project on manufacturing orders">
+                            <field name="dw_require_project_on_mo"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="dw_config_settings_action" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'dw_manufacturing', 'bin_size': False}</field>
+    </record>
+</odoo>

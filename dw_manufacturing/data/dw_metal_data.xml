@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Metal types -->
+        <record id="metal_type_carbon_steel" model="dw.metal.type">
+            <field name="name">Carbon Steel</field>
+            <field name="code">CS</field>
+            <field name="sequence">10</field>
+            <field name="density">7850</field>
+        </record>
+        <record id="metal_type_galvanized" model="dw.metal.type">
+            <field name="name">Galvanized Steel</field>
+            <field name="code">GI</field>
+            <field name="sequence">20</field>
+            <field name="density">7850</field>
+        </record>
+        <record id="metal_type_stainless" model="dw.metal.type">
+            <field name="name">Stainless Steel</field>
+            <field name="code">SS</field>
+            <field name="sequence">30</field>
+            <field name="density">7930</field>
+        </record>
+        <record id="metal_type_aluminium" model="dw.metal.type">
+            <field name="name">Aluminium</field>
+            <field name="code">AL</field>
+            <field name="sequence">40</field>
+            <field name="density">2700</field>
+        </record>
+
+        <!-- Grades -->
+        <record id="metal_grade_st37" model="dw.metal.grade">
+            <field name="name">ST37 / S235JR</field>
+            <field name="code">ST37</field>
+            <field name="metal_type_id" ref="metal_type_carbon_steel"/>
+            <field name="standard">EN 10025</field>
+            <field name="yield_strength">235</field>
+        </record>
+        <record id="metal_grade_st52" model="dw.metal.grade">
+            <field name="name">ST52 / S355JR</field>
+            <field name="code">ST52</field>
+            <field name="metal_type_id" ref="metal_type_carbon_steel"/>
+            <field name="standard">EN 10025</field>
+            <field name="yield_strength">355</field>
+        </record>
+        <record id="metal_grade_a36" model="dw.metal.grade">
+            <field name="name">ASTM A36</field>
+            <field name="code">A36</field>
+            <field name="metal_type_id" ref="metal_type_carbon_steel"/>
+            <field name="standard">ASTM A36</field>
+            <field name="yield_strength">250</field>
+        </record>
+        <record id="metal_grade_304" model="dw.metal.grade">
+            <field name="name">AISI 304</field>
+            <field name="code">304</field>
+            <field name="metal_type_id" ref="metal_type_stainless"/>
+            <field name="density">7930</field>
+        </record>
+        <record id="metal_grade_316" model="dw.metal.grade">
+            <field name="name">AISI 316</field>
+            <field name="code">316</field>
+            <field name="metal_type_id" ref="metal_type_stainless"/>
+            <field name="density">8000</field>
+        </record>
+        <record id="metal_grade_6063" model="dw.metal.grade">
+            <field name="name">Aluminium 6063</field>
+            <field name="code">6063</field>
+            <field name="metal_type_id" ref="metal_type_aluminium"/>
+            <field name="density">2700</field>
+        </record>
+
+        <!-- Finishes -->
+        <record id="finish_primer_paint" model="dw.finish.type">
+            <field name="name">Primer and Paint</field>
+            <field name="code">PAINT</field>
+            <field name="kind">paint</field>
+            <field name="coverage_m2_per_unit">8</field>
+        </record>
+        <record id="finish_powder" model="dw.finish.type">
+            <field name="name">Powder Coating</field>
+            <field name="code">POWDER</field>
+            <field name="kind">powder</field>
+            <field name="coverage_m2_per_unit">10</field>
+        </record>
+        <record id="finish_hot_dip" model="dw.finish.type">
+            <field name="name">Hot Dip Galvanizing</field>
+            <field name="code">HDG</field>
+            <field name="kind">galvanizing</field>
+            <field name="coverage_m2_per_unit">1</field>
+        </record>
+        <record id="finish_raw" model="dw.finish.type">
+            <field name="name">Raw / Untreated</field>
+            <field name="code">RAW</field>
+            <field name="kind">raw</field>
+        </record>
+
+        <!-- Reference profiles -->
+        <record id="profile_shs_40x40x2" model="dw.metal.profile">
+            <field name="name">SHS 40x40x2</field>
+            <field name="code">SHS40x40x2</field>
+            <field name="shape">square_tube</field>
+            <field name="metal_type_id" ref="metal_type_carbon_steel"/>
+            <field name="dim_a">40</field>
+            <field name="thickness_mm">2</field>
+            <field name="commercial_length_m">6</field>
+        </record>
+        <record id="profile_shs_50x50x2" model="dw.metal.profile">
+            <field name="name">SHS 50x50x2</field>
+            <field name="code">SHS50x50x2</field>
+            <field name="shape">square_tube</field>
+            <field name="metal_type_id" ref="metal_type_carbon_steel"/>
+            <field name="dim_a">50</field>
+            <field name="thickness_mm">2</field>
+            <field name="commercial_length_m">6</field>
+        </record>
+        <record id="profile_rhs_60x40x2" model="dw.metal.profile">
+            <field name="name">RHS 60x40x2</field>
+            <field name="code">RHS60x40x2</field>
+            <field name="shape">rect_tube</field>
+            <field name="metal_type_id" ref="metal_type_carbon_steel"/>
+            <field name="dim_a">60</field>
+            <field name="dim_b">40</field>
+            <field name="thickness_mm">2</field>
+            <field name="commercial_length_m">6</field>
+        </record>
+        <record id="profile_angle_50x50x5" model="dw.metal.profile">
+            <field name="name">Angle 50x50x5</field>
+            <field name="code">L50x50x5</field>
+            <field name="shape">angle</field>
+            <field name="metal_type_id" ref="metal_type_carbon_steel"/>
+            <field name="dim_a">50</field>
+            <field name="dim_b">50</field>
+            <field name="thickness_mm">5</field>
+            <field name="commercial_length_m">6</field>
+        </record>
+        <record id="profile_sheet_1_5" model="dw.metal.profile">
+            <field name="name">Steel Sheet 1.5 mm</field>
+            <field name="code">SHEET1.5</field>
+            <field name="shape">sheet</field>
+            <field name="metal_type_id" ref="metal_type_carbon_steel"/>
+            <field name="thickness_mm">1.5</field>
+        </record>
+        <record id="profile_sheet_2" model="dw.metal.profile">
+            <field name="name">Steel Sheet 2 mm</field>
+            <field name="code">SHEET2</field>
+            <field name="shape">sheet</field>
+            <field name="metal_type_id" ref="metal_type_carbon_steel"/>
+            <field name="thickness_mm">2</field>
+        </record>
+        <record id="profile_round_bar_12" model="dw.metal.profile">
+            <field name="name">Round Bar 12 mm</field>
+            <field name="code">RB12</field>
+            <field name="shape">round_bar</field>
+            <field name="metal_type_id" ref="metal_type_carbon_steel"/>
+            <field name="dim_a">12</field>
+            <field name="commercial_length_m">6</field>
+        </record>
+        <record id="profile_pipe_48_3" model="dw.metal.profile">
+            <field name="name">Pipe 48.3x3.2</field>
+            <field name="code">PIPE48.3</field>
+            <field name="shape">round_tube</field>
+            <field name="metal_type_id" ref="metal_type_carbon_steel"/>
+            <field name="dim_a">48.3</field>
+            <field name="thickness_mm">3.2</field>
+            <field name="commercial_length_m">6</field>
+        </record>
+
+        <!-- Scrap reasons -->
+        <record id="scrap_reason_cutting" model="dw.scrap.reason">
+            <field name="name">Cutting Loss</field>
+            <field name="code">CUT</field>
+            <field name="scrap_type">cutting_loss</field>
+            <field name="is_planned" eval="True"/>
+        </record>
+        <record id="scrap_reason_offcut" model="dw.scrap.reason">
+            <field name="name">Reusable Off-cut</field>
+            <field name="code">OFFCUT</field>
+            <field name="scrap_type">offcut</field>
+            <field name="is_planned" eval="True"/>
+            <field name="is_reusable" eval="True"/>
+        </record>
+        <record id="scrap_reason_defect" model="dw.scrap.reason">
+            <field name="name">Manufacturing Defect</field>
+            <field name="code">DEFECT</field>
+            <field name="scrap_type">defect</field>
+            <field name="requires_approval" eval="True"/>
+        </record>
+        <record id="scrap_reason_material" model="dw.scrap.reason">
+            <field name="name">Material Defect</field>
+            <field name="code">MATDEF</field>
+            <field name="scrap_type">material_defect</field>
+        </record>
+        <record id="scrap_reason_design" model="dw.scrap.reason">
+            <field name="name">Design Change</field>
+            <field name="code">DESIGN</field>
+            <field name="scrap_type">design_change</field>
+            <field name="requires_approval" eval="True"/>
+        </record>
+        <record id="scrap_reason_handling" model="dw.scrap.reason">
+            <field name="name">Handling Damage</field>
+            <field name="code">HANDLE</field>
+            <field name="scrap_type">handling</field>
+        </record>
+        <record id="scrap_reason_rework" model="dw.scrap.reason">
+            <field name="name">Rework Loss</field>
+            <field name="code">REWORK</field>
+            <field name="scrap_type">rework</field>
+        </record>
+    </data>
+</odoo>

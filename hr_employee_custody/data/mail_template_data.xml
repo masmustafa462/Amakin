@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="email_template_custody_issued" model="mail.template">
+        <field name="name">Employee Custody: Issued</field>
+        <field name="model_id" ref="model_employee_custody"/>
+        <field name="subject">تم صرف العهدة {{ object.name }}</field>
+        <field name="email_from">{{ (object.company_id.email or user.email) | safe }}</field>
+        <field name="email_to">{{ object.employee_id.work_email or '' }}</field>
+        <field name="lang">{{ object.employee_id.lang }}</field>
+        <field name="body_html" type="html">
+<div style="direction:rtl; text-align:right; font-family:Tahoma, Arial, sans-serif;">
+    <p>عزيزي/عزيزتي <strong t-out="object.employee_id.name"/>،</p>
+    <p>نحيطكم علماً بأنه تم صرف العهدة رقم
+        <strong t-out="object.name"/> بتاريخ <strong t-out="object.issue_date"/>.</p>
+    <p t-if="object.custody_kind == 'financial'">
+        المبلغ: <strong t-out="'%.2f %s' % (object.amount, object.currency_id.name)"/>
+    </p>
+    <p t-if="object.custody_kind == 'material'">
+        الأصل: <strong t-out="object.asset_description"/> — الكمية:
+        <strong t-out="object.quantity"/>
+    </p>
+    <p>التاريخ المتوقع للتسوية: <strong t-out="object.expected_return_date"/></p>
+    <p>الرجاء الاحتفاظ بهذا الإشعار للمرجع.</p>
+</div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+    <record id="email_template_custody_overdue" model="mail.template">
+        <field name="name">Employee Custody: Overdue</field>
+        <field name="model_id" ref="model_employee_custody"/>
+        <field name="subject">تنبيه تأخر تسوية العهدة {{ object.name }}</field>
+        <field name="email_from">{{ (object.company_id.email or user.email) | safe }}</field>
+        <field name="email_to">{{ object.employee_id.work_email or '' }}</field>
+        <field name="body_html" type="html">
+<div style="direction:rtl; text-align:right;">
+    <p>عزيزي/عزيزتي <strong t-out="object.employee_id.name"/>،</p>
+    <p>العهدة رقم <strong t-out="object.name"/> متأخرة عن تاريخ التسوية بتاريخ
+        <strong t-out="object.expected_return_date"/>.</p>
+    <p>أيام التأخير: <strong t-out="object.overdue_days"/></p>
+    <p>يرجى المبادرة بتسوية العهدة أو التواصل مع قسم المحاسبة.</p>
+</div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+</odoo>

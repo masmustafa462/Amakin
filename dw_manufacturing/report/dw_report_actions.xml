@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_dw_item" model="ir.actions.report">
+        <field name="name">Manufacturing Item</field>
+        <field name="model">dw.opening</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dw_manufacturing.dw_item_report</field>
+        <field name="report_file">dw_manufacturing.dw_item_report</field>
+        <field name="print_report_name">'Item - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_dw_opening"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="dw_paperformat_a4"/>
+    </record>
+
+    <record id="action_report_dw_production_cost_card" model="ir.actions.report">
+        <field name="name">Cost Card</field>
+        <field name="model">mrp.production</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dw_manufacturing.dw_production_cost_card</field>
+        <field name="report_file">dw_manufacturing.dw_production_cost_card</field>
+        <field name="print_report_name">'Cost Card - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="mrp.model_mrp_production"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="dw_paperformat_a4"/>
+        <field name="group_ids" eval="[(4, ref('dw_manufacturing.group_dw_cost_accountant'))]"/>
+    </record>
+
+    <record id="action_report_dw_cost_variance" model="ir.actions.report">
+        <field name="name">Cost Variance</field>
+        <field name="model">mrp.production</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dw_manufacturing.dw_cost_variance_report_pdf</field>
+        <field name="report_file">dw_manufacturing.dw_cost_variance_report_pdf</field>
+        <field name="print_report_name">'Cost Variance - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="mrp.model_mrp_production"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="dw_paperformat_a4"/>
+        <field name="group_ids" eval="[(4, ref('dw_manufacturing.group_dw_cost_accountant'))]"/>
+    </record>
+
+    <record id="action_report_dw_scrap" model="ir.actions.report">
+        <field name="name">Scrap Report</field>
+        <field name="model">mrp.production</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dw_manufacturing.dw_scrap_report_pdf</field>
+        <field name="report_file">dw_manufacturing.dw_scrap_report_pdf</field>
+        <field name="print_report_name">'Scrap - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="mrp.model_mrp_production"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="dw_paperformat_a4"/>
+    </record>
+
+    <record id="action_report_dw_project_profitability" model="ir.actions.report">
+        <field name="name">Project Profitability</field>
+        <field name="model">project.project</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dw_manufacturing.dw_project_profitability_pdf</field>
+        <field name="report_file">dw_manufacturing.dw_project_profitability_pdf</field>
+        <field name="print_report_name">'Profitability - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="project.model_project_project"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="dw_paperformat_a4"/>
+        <field name="group_ids" eval="[(4, ref('dw_manufacturing.group_dw_profitability'))]"/>
+    </record>
+
+    <record id="action_report_dw_quality_check" model="ir.actions.report">
+        <field name="name">Quality Inspection</field>
+        <field name="model">dw.quality.check</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dw_manufacturing.dw_quality_check_pdf</field>
+        <field name="report_file">dw_manufacturing.dw_quality_check_pdf</field>
+        <field name="print_report_name">'Quality - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_dw_quality_check"/>
+        <field name="binding_type">report</field>
+        <field name="paperformat_id" ref="dw_paperformat_a4"/>
+    </record>
+</odoo>

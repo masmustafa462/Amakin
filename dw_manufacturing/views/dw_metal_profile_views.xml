@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dw_metal_profile_view_form" model="ir.ui.view">
+        <field name="name">dw.metal.profile.form</field>
+        <field name="model">dw.metal.profile</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="SHS 40x40x2"/></h1>
+                    </div>
+                    <group>
+                        <group string="Identification">
+                            <field name="code"/>
+                            <field name="shape"/>
+                            <field name="metal_type_id"/>
+                            <field name="metal_grade_id"/>
+                            <field name="density"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Geometry (mm)">
+                            <field name="dim_a" invisible="shape in ('sheet', 'chequered_plate', 'mesh', 'custom_linear', 'custom_area', 'custom_piece')"/>
+                            <field name="dim_b" invisible="shape not in ('rect_tube', 'angle', 'channel', 'ibeam')"/>
+                            <field name="thickness_mm" invisible="shape in ('round_bar', 'square_bar', 'custom_linear', 'custom_area', 'custom_piece')"/>
+                            <field name="flange_thickness_mm" invisible="shape not in ('channel', 'ibeam')"/>
+                            <field name="mesh_open_ratio" invisible="shape != 'mesh'"/>
+                            <field name="commercial_length_m"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Manual Weight">
+                            <field name="use_manual_weight"/>
+                            <field name="manual_weight_per_m" invisible="not use_manual_weight and shape != 'custom_linear'"/>
+                            <field name="manual_weight_per_m2" invisible="not use_manual_weight and shape != 'custom_area'"/>
+                            <field name="manual_weight_per_piece" invisible="not use_manual_weight and shape != 'custom_piece'"/>
+                        </group>
+                        <group string="Theoretical Weight">
+                            <field name="weight_basis" readonly="1"/>
+                            <field name="weight_per_m" readonly="1"/>
+                            <field name="weight_per_m2" readonly="1"/>
+                            <field name="weight_per_piece" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="note" placeholder="Reference standard, supplier notes..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="dw_metal_profile_view_list" model="ir.ui.view">
+        <field name="name">dw.metal.profile.list</field>
+        <field name="model">dw.metal.profile</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="shape"/>
+                <field name="metal_type_id"/>
+                <field name="dim_a"/>
+                <field name="dim_b" optional="show"/>
+                <field name="thickness_mm"/>
+                <field name="density" optional="hide"/>
+                <field name="weight_per_m"/>
+                <field name="weight_per_m2"/>
+                <field name="commercial_length_m" optional="hide"/>
+                <field name="active" widget="boolean_toggle" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_metal_profile_view_search" model="ir.ui.view">
+        <field name="name">dw.metal.profile.search</field>
+        <field name="model">dw.metal.profile</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="metal_type_id"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Shape" name="group_shape" context="{'group_by': 'shape'}"/>
+                    <filter string="Metal Type" name="group_metal" context="{'group_by': 'metal_type_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="dw_metal_profile_action" model="ir.actions.act_window">
+        <field name="name">Metal Profiles</field>
+        <field name="res_model">dw.metal.profile</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

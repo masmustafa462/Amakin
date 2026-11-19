@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="dw_project_profitability_document">
+        <t t-call="web.external_layout">
+            <t t-set="doc" t-value="o.with_context(lang=lang)"/>
+            <div class="page">
+                <t t-call="dw_manufacturing.dw_report_wrapper">
+                    <h2 class="dw-title">Project Profitability</h2>
+                    <div class="dw-subtitle"><span t-field="doc.name"/></div>
+
+                    <table>
+                        <tr>
+                            <th style="width:25%;">Customer</th>
+                            <td style="width:25%;"><span t-field="doc.partner_id"/></td>
+                            <th style="width:25%;">Completion</th>
+                            <td style="width:25%;" class="dw-num"><span t-field="doc.dw_completion_percent"/> %</td>
+                        </tr>
+                    </table>
+
+                    <h3>Revenue</h3>
+                    <table>
+                        <tr>
+                            <th>Expected Revenue</th>
+                            <td class="dw-num"><span t-field="doc.dw_expected_revenue" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                        </tr>
+                        <tr>
+                            <th>Invoiced Revenue</th>
+                            <td class="dw-num"><span t-field="doc.dw_invoiced_revenue" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                        </tr>
+                        <tr t-if="doc.dw_internal_transfer_value">
+                            <th>Internal Transfer Value</th>
+                            <td class="dw-num"><span t-field="doc.dw_internal_transfer_value" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                        </tr>
+                        <tr>
+                            <th>Revenue Variance</th>
+                            <td class="dw-num"><span t-field="doc.dw_revenue_variance" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                        </tr>
+                    </table>
+
+                    <h3>Cost</h3>
+                    <table>
+                        <tr>
+                            <th>Estimated Cost</th>
+                            <td class="dw-num"><span t-field="doc.dw_estimated_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                        </tr>
+                        <tr>
+                            <th>Actual Cost</th>
+                            <td class="dw-num"><span t-field="doc.dw_actual_cost" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                        </tr>
+                        <tr>
+                            <th>Cost Variance</th>
+                            <td class="dw-num"><span t-field="doc.dw_cost_variance" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                        </tr>
+                        <tr t-if="doc.dw_wip_value">
+                            <th>Work in Progress</th>
+                            <td class="dw-num"><span t-field="doc.dw_wip_value" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                        </tr>
+                    </table>
+
+                    <h3>Result</h3>
+                    <table>
+                        <tr>
+                            <th>Expected Profit</th>
+                            <td class="dw-num"><span t-field="doc.dw_expected_profit" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                            <th>Expected Margin</th>
+                            <td class="dw-num"><span t-field="doc.dw_expected_margin_percent"/> %</td>
+                        </tr>
+                        <tr class="dw-total-row">
+                            <th>Actual Profit</th>
+                            <td class="dw-num"><span t-field="doc.dw_actual_profit" t-options='{"widget": "monetary", "display_currency": doc.dw_currency_id}'/></td>
+                            <th>Actual Margin</th>
+                            <td class="dw-num"><span t-field="doc.dw_actual_margin_percent"/> %</td>
+                        </tr>
+                    </table>
+
+                    <h3>Manufacturing Items</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Product</th>
+                                <th class="dw-num">Qty</th>
+                                <th class="dw-num">Estimated</th>
+                                <th class="dw-num">Actual</th>
+                                <th class="dw-num">Revenue</th>
+                                <th class="dw-num">Profit</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="doc.dw_opening_ids" t-as="item">
+                                <td><span t-field="item.name"/></td>
+                                <td><span t-field="item.finished_product_id"/></td>
+                                <td class="dw-num"><span t-field="item.quantity"/></td>
+                                <td class="dw-num"><span t-field="item.estimated_cost" t-options='{"widget": "monetary", "display_currency": item.currency_id}'/></td>
+                                <td class="dw-num"><span t-field="item.actual_cost" t-options='{"widget": "monetary", "display_currency": item.currency_id}'/></td>
+                                <td class="dw-num"><span t-field="item.actual_revenue" t-options='{"widget": "monetary", "display_currency": item.currency_id}'/></td>
+                                <td class="dw-num"><span t-field="item.actual_profit" t-options='{"widget": "monetary", "display_currency": item.currency_id}'/></td>
+                                <td><span t-field="item.state"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="dw_project_profitability_pdf">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="lang" t-value="user.lang or 'en_US'"/>
+                <t t-call="dw_manufacturing.dw_project_profitability_document"/>
+            </t>
+        </t>
+    </template>
+</odoo>

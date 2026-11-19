@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_custody_clearance_document">
+        <t t-call="web.external_layout">
+            <div class="page" dir="rtl" style="text-align:right;">
+                <div class="text-center mb-4">
+                    <h2>نموذج إخلاء طرف عهدة</h2>
+                    <h4 t-field="doc.name"/>
+                </div>
+
+                <table class="table table-bordered">
+                    <tr>
+                        <th style="width:25%;">الموظف</th>
+                        <td><span t-field="doc.employee_id"/></td>
+                        <th style="width:25%;">القسم</th>
+                        <td><span t-field="doc.department_id"/></td>
+                    </tr>
+                    <tr>
+                        <th>نوع العهدة</th>
+                        <td><span t-field="doc.custody_type_id"/></td>
+                        <th>تاريخ الإصدار</th>
+                        <td><span t-field="doc.issue_date"/></td>
+                    </tr>
+                    <tr>
+                        <th>الحالة</th>
+                        <td><span t-field="doc.state"/></td>
+                        <th>تاريخ التسوية النهائية</th>
+                        <td><span t-field="doc.settlement_date"/></td>
+                    </tr>
+                </table>
+
+                <t t-if="doc.custody_kind == 'financial'">
+                    <h4>الوضع المالي</h4>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>الأصل</th>
+                            <td>
+                                <span t-field="doc.amount"
+                                      t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                            </td>
+                            <th>المسوى</th>
+                            <td>
+                                <span t-field="doc.amount_settled"
+                                      t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>الرصيد</th>
+                            <td>
+                                <span t-field="doc.balance_amount"
+                                      t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                            </td>
+                            <th>نسبة التسوية</th>
+                            <td>
+                                <span t-field="doc.settlement_ratio"
+                                      t-options='{"widget": "percentage"}'/>
+                            </td>
+                        </tr>
+                    </table>
+                </t>
+
+                <t t-if="doc.custody_kind == 'material'">
+                    <h4>وضع العهدة العينية</h4>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>الكمية الأصلية</th>
+                            <td><span t-field="doc.quantity"/></td>
+                            <th>الكمية المرتجعة</th>
+                            <td><span t-field="doc.returned_quantity"/></td>
+                        </tr>
+                        <tr>
+                            <th>المتبقي</th>
+                            <td><span t-field="doc.remaining_quantity"/></td>
+                            <th>الحالة</th>
+                            <td><span t-field="doc.condition"/></td>
+                        </tr>
+                    </table>
+                </t>
+
+                <h4 class="mt-4">تسويات مرحلة</h4>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>الرقم</th>
+                            <th>التاريخ</th>
+                            <th>النوع</th>
+                            <th>المبلغ</th>
+                            <th>الكمية</th>
+                            <th>القيد</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="doc.settlement_ids.filtered(lambda s: s.state == 'posted')"
+                            t-as="s">
+                            <td t-out="s.name"/>
+                            <td><span t-field="s.settlement_date"/></td>
+                            <td><span t-field="s.settlement_kind"/></td>
+                            <td>
+                                <span t-field="s.amount"
+                                      t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                            </td>
+                            <td><span t-field="s.returned_quantity"/></td>
+                            <td><span t-field="s.move_id"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p class="mt-5">
+                    يشهد الموقعون أدناه بأن العهدة المذكورة أعلاه قد تمت تسويتها بالكامل،
+                    ولا توجد مسؤوليات مالية أو عينية متبقية على الموظف تجاه هذه العهدة.
+                </p>
+
+                <table class="table mt-5" style="width:100%; border:none;">
+                    <tr>
+                        <td style="text-align:center; border:none;">
+                            <p><strong>الموظف</strong></p>
+                            <p t-field="doc.employee_id.name"/>
+                            <p>التوقيع: ..........................</p>
+                        </td>
+                        <td style="text-align:center; border:none;">
+                            <p><strong>المحاسب</strong></p>
+                            <p>..........................</p>
+                            <p>التوقيع: ..........................</p>
+                        </td>
+                        <td style="text-align:center; border:none;">
+                            <p><strong>المدير</strong></p>
+                            <p t-field="doc.manager_id.name"/>
+                            <p>التوقيع: ..........................</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_custody_clearance">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="hr_employee_custody.report_custody_clearance_document"/>
+            </t>
+        </t>
+    </template>
+
+</odoo>

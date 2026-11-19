@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- /my/mcp — a user issues and revokes their own key.
+
+         Built on web.layout rather than portal.portal_layout or
+         web.frontend_layout: both of those reach for modules this one does not
+         depend on, and this module must install on a bare Odoo. Styling is
+         inline for the same reason — there is no guarantee a frontend asset
+         bundle is even being served here. -->
+    <template id="portal_mcp_keys" name="MCP: my keys">
+        <t t-call="web.layout">
+            <t t-set="html_data" t-value="{'lang': 'en-US'}"/>
+            <div style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+                        background:#F5F6FA;min-height:100vh;margin:0;padding:48px 20px;">
+                <div style="max-width:760px;margin:0 auto;">
+
+                    <div style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;
+                                color:#8B5CF6;font-weight:700;margin-bottom:8px;">
+                        Model Context Protocol
+                    </div>
+                    <h1 style="margin:0 0 6px;font-size:26px;color:#0F1117;">My AI connection keys</h1>
+                    <p style="color:#475569;line-height:1.7;margin:0 0 26px;">
+                        A key lets an AI assistant read Odoo <b>as you</b>. It can never see
+                        or do more than your own Odoo account allows.
+                    </p>
+
+                    <!-- Messages -->
+                    <t t-if="error">
+                        <div style="background:#FEF2F2;border:1px solid #FCA5A5;color:#7F1D1D;
+                                    border-radius:10px;padding:14px 16px;margin-bottom:20px;">
+                            <t t-esc="error"/>
+                        </div>
+                    </t>
+                    <t t-if="info">
+                        <div style="background:#F0FDF4;border:1px solid #86EFAC;color:#14532D;
+                                    border-radius:10px;padding:14px 16px;margin-bottom:20px;">
+                            <t t-esc="info"/>
+                        </div>
+                    </t>
+
+                    <!-- The one and only time this token is ever shown. -->
+                    <t t-if="new_token">
+                        <div style="background:#FFFFFF;border:2px solid #8B5CF6;border-radius:12px;
+                                    padding:20px 22px;margin-bottom:24px;">
+                            <div style="font-weight:700;color:#0F1117;margin-bottom:6px;">
+                                Copy this now — it is shown once
+                            </div>
+                            <p style="color:#475569;margin:0 0 12px;line-height:1.6;">
+                                Odoo stores only a hash of it. If you lose it, revoke the key
+                                and issue another.
+                            </p>
+                            <div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+                                        font-size:13px;background:#0F1117;color:#E2E8F0;
+                                        border-radius:8px;padding:14px;word-break:break-all;">
+                                <t t-esc="new_token"/>
+                            </div>
+                            <div style="font-weight:700;color:#0F1117;margin:18px 0 6px;">
+                                Connector URL
+                            </div>
+                            <p style="color:#475569;margin:0 0 10px;line-height:1.6;">
+                                Paste this into your AI client's "add a custom connector" box.
+                            </p>
+                            <div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+                                        font-size:12px;background:#F1F5F9;color:#0F1117;
+                                        border:1px solid #E2E8F0;border-radius:8px;padding:12px;
+                                        word-break:break-all;">
+                                <t t-esc="new_connect_url"/>
+                            </div>
+                        </div>
+                    </t>
+
+                    <!-- What a key issued here is allowed to do. -->
+                    <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
+                                padding:20px 22px;margin-bottom:24px;">
+                        <div style="font-weight:700;color:#0F1117;margin-bottom:10px;">
+                            What a key from this page can do
+                        </div>
+                        <table style="width:100%; border-collapse:collapse;color:#475569;">
+                            <tr>
+                                <td style="padding:6px 0;">Models it may touch</td>
+                                <td style="padding:6px 0;color:#0F1117;font-weight:600;">
+                                    <t t-if="template['allowed_models'] == '*'">Everything you can see</t>
+                                    <t t-elif="template['allowed_models']">
+                                        <t t-esc="template['allowed_models']"/>
+                                    </t>
+                                    <t t-else="">Nothing yet — ask your administrator</t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:6px 0;">Permissions</td>
+                                <td style="padding:6px 0;color:#0F1117;font-weight:600;">
+                                    <t t-if="template['perm_read']">Read </t>
+                                    <t t-if="template['perm_create']">· Create </t>
+                                    <t t-if="template['perm_write']">· Update </t>
+                                    <t t-if="template['perm_unlink']">· Delete</t>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:6px 0;">Daily limit</td>
+                                <td style="padding:6px 0;color:#0F1117;font-weight:600;">
+                                    <t t-esc="template['daily_quota']"/> calls
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:6px 0;">Keys you may hold</td>
+                                <td style="padding:6px 0;color:#0F1117;font-weight:600;">
+                                    <t t-esc="template['max_keys']"/>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Issue -->
+                    <t t-if="not at_limit">
+                        <form action="/my/mcp/new" method="post"
+                              style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
+                                     padding:20px 22px;margin-bottom:24px;">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <div style="font-weight:700;color:#0F1117;margin-bottom:10px;">
+                                Issue a new key
+                            </div>
+                            <input type="text" name="name" placeholder="What is it for? e.g. Claude on my laptop"
+                                   style="width:100%;box-sizing:border-box;padding:11px 13px;
+                                          border:1px solid #CBD5E1;border-radius:8px;font-size:14px;
+                                          margin-bottom:12px;"/>
+                            <button type="submit"
+                                    style="background:#8B5CF6;color:#FFFFFF;border:0;border-radius:8px;
+                                           padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer;">
+                                Issue key
+                            </button>
+                        </form>
+                    </t>
+                    <t t-else="">
+                        <div style="background:#FFFBEB;border:1px solid #FDE68A;color:#78350F;
+                                    border-radius:10px;padding:14px 16px;margin-bottom:24px;">
+                            You are holding the maximum number of active keys. Revoke one to issue another.
+                        </div>
+                    </t>
+
+                    <!-- Existing -->
+                    <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
+                                padding:20px 22px;">
+                        <div style="font-weight:700;color:#0F1117;margin-bottom:12px;">Your keys</div>
+                        <t t-if="not keys">
+                            <p style="color:#64748B;margin:0;">You have not issued any yet.</p>
+                        </t>
+                        <t t-foreach="keys" t-as="key">
+                            <div style="display:flex;align-items:center;justify-content:space-between;
+                                        gap:12px;border-top:1px solid #F1F5F9;padding:12px 0;">
+                                <div>
+                                    <div style="color:#0F1117;font-weight:600;"><t t-esc="key.name"/></div>
+                                    <div style="color:#64748B;font-size:13px;">
+                                        <t t-esc="key.total_calls"/> calls ·
+                                        <t t-esc="key.usage_today"/> today ·
+                                        <t t-if="key.last_used">last used <t t-esc="key.last_used"/></t>
+                                        <t t-else="">never used</t>
+                                    </div>
+                                </div>
+                                <div>
+                                    <t t-if="key.state == 'active'">
+                                        <form t-attf-action="/my/mcp/revoke/#{key.id}" method="post"
+                                              style="margin:0;">
+                                            <input type="hidden" name="csrf_token"
+                                                   t-att-value="request.csrf_token()"/>
+                                            <button type="submit"
+                                                    style="background:#FFFFFF;color:#B91C1C;
+                                                           border:1px solid #FCA5A5;border-radius:8px;
+                                                           padding:8px 14px;font-size:13px;font-weight:600;
+                                                           cursor:pointer;">
+                                                Revoke
+                                            </button>
+                                        </form>
+                                    </t>
+                                    <t t-else="">
+                                        <span style="color:#94A3B8;font-size:13px;">Revoked</span>
+                                    </t>
+                                </div>
+                            </div>
+                        </t>
+                    </div>
+
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

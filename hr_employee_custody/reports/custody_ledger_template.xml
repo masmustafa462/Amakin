@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_custody_ledger_document">
+        <t t-call="web.external_layout">
+            <div class="page" dir="rtl" style="text-align:right;">
+                <div class="text-center mb-4">
+                    <h2>كشف حساب عهدة</h2>
+                    <h4 t-field="doc.name"/>
+                </div>
+
+                <table class="table table-bordered">
+                    <tr>
+                        <th>الموظف</th>
+                        <td><span t-field="doc.employee_id"/></td>
+                        <th>القسم</th>
+                        <td><span t-field="doc.department_id"/></td>
+                    </tr>
+                    <tr>
+                        <th>النوع</th>
+                        <td><span t-field="doc.custody_type_id"/></td>
+                        <th>تاريخ الإصدار</th>
+                        <td><span t-field="doc.issue_date"/></td>
+                    </tr>
+                </table>
+
+                <table class="table table-bordered" style="width:100%;">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>المرجع</th>
+                            <th>البيان</th>
+                            <th>مدين</th>
+                            <th>دائن</th>
+                            <th>الرصيد</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="ledger[doc.id]" t-as="row">
+                            <td t-out="row['date']"/>
+                            <td t-out="row['ref']"/>
+                            <td t-out="row['description']"/>
+                            <td>
+                                <span t-out="'%.2f' % row['debit']"/>
+                            </td>
+                            <td>
+                                <span t-out="'%.2f' % row['credit']"/>
+                            </td>
+                            <td>
+                                <span t-out="'%.2f' % row['balance']"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_custody_ledger">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="hr_employee_custody.report_custody_ledger_document"/>
+            </t>
+        </t>
+    </template>
+
+</odoo>

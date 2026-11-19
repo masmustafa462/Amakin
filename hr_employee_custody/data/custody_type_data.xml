@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <!-- Financial types -->
+    <record id="type_petty_cash" model="employee.custody.type">
+        <field name="name">سلفة نقدية (نثرية)</field>
+        <field name="code">CASH-ADV</field>
+        <field name="custody_kind">financial</field>
+        <field name="category_id" ref="category_financial"/>
+        <field name="default_duration_days">30</field>
+        <field name="require_approval" eval="True"/>
+    </record>
+
+    <record id="type_travel_advance" model="employee.custody.type">
+        <field name="name">سلفة سفر ومهمة</field>
+        <field name="code">TRV-ADV</field>
+        <field name="custody_kind">financial</field>
+        <field name="category_id" ref="category_financial"/>
+        <field name="default_duration_days">15</field>
+        <field name="require_approval" eval="True"/>
+    </record>
+
+    <record id="type_purchase_advance" model="employee.custody.type">
+        <field name="name">سلفة مشتريات</field>
+        <field name="code">PUR-ADV</field>
+        <field name="custody_kind">financial</field>
+        <field name="category_id" ref="category_financial"/>
+        <field name="default_duration_days">30</field>
+        <field name="require_approval" eval="True"/>
+        <field name="require_accounting_approval" eval="True"/>
+    </record>
+
+    <!-- Material types -->
+    <record id="type_laptop" model="employee.custody.type">
+        <field name="name">جهاز حاسوب محمول</field>
+        <field name="code">LPT</field>
+        <field name="custody_kind">material</field>
+        <field name="category_id" ref="category_it_equipment"/>
+        <field name="default_duration_days">365</field>
+        <field name="allow_partial_return" eval="False"/>
+    </record>
+
+    <record id="type_mobile" model="employee.custody.type">
+        <field name="name">هاتف محمول</field>
+        <field name="code">MOB</field>
+        <field name="custody_kind">material</field>
+        <field name="category_id" ref="category_it_equipment"/>
+        <field name="default_duration_days">365</field>
+    </record>
+
+    <record id="type_vehicle" model="employee.custody.type">
+        <field name="name">سيارة</field>
+        <field name="code">VEH</field>
+        <field name="custody_kind">material</field>
+        <field name="category_id" ref="category_vehicles"/>
+        <field name="default_duration_days">365</field>
+    </record>
+
+    <record id="type_tools" model="employee.custody.type">
+        <field name="name">عدد وأدوات عمل</field>
+        <field name="code">TOL</field>
+        <field name="custody_kind">material</field>
+        <field name="category_id" ref="category_tools"/>
+        <field name="default_duration_days">180</field>
+        <field name="allow_partial_return" eval="True"/>
+    </record>
+
+</odoo>

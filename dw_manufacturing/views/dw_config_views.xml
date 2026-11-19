@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ================= Dimension catalogue ================= -->
+    <record id="dw_dimension_field_view_list" model="ir.ui.view">
+        <field name="name">dw.dimension.field.list</field>
+        <field name="model">dw.dimension.field</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="uom_label"/>
+                <field name="is_computed"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_dimension_field_action" model="ir.actions.act_window">
+        <field name="name">Dimensions</field>
+        <field name="res_model">dw.dimension.field</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ================= Metal types and grades ================= -->
+    <record id="dw_metal_type_view_form" model="ir.ui.view">
+        <field name="name">dw.metal.type.form</field>
+        <field name="model">dw.metal.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Carbon Steel"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="density"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Grades" name="grades">
+                            <field name="grade_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                    <field name="standard"/>
+                                    <field name="density"/>
+                                    <field name="yield_strength"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="dw_metal_type_view_list" model="ir.ui.view">
+        <field name="name">dw.metal.type.list</field>
+        <field name="model">dw.metal.type</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="density"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_metal_type_action" model="ir.actions.act_window">
+        <field name="name">Metal Types</field>
+        <field name="res_model">dw.metal.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="dw_metal_grade_view_list" model="ir.ui.view">
+        <field name="name">dw.metal.grade.list</field>
+        <field name="model">dw.metal.grade</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="metal_type_id"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="standard"/>
+                <field name="density"/>
+                <field name="yield_strength"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_metal_grade_action" model="ir.actions.act_window">
+        <field name="name">Metal Grades</field>
+        <field name="res_model">dw.metal.grade</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ================= Finishes ================= -->
+    <record id="dw_finish_type_view_list" model="ir.ui.view">
+        <field name="name">dw.finish.type.list</field>
+        <field name="model">dw.finish.type</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="kind"/>
+                <field name="coverage_m2_per_unit"/>
+                <field name="consumable_product_id"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_finish_type_action" model="ir.actions.act_window">
+        <field name="name">Finish Types</field>
+        <field name="res_model">dw.finish.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ================= Operation types ================= -->
+    <record id="dw_operation_type_view_list" model="ir.ui.view">
+        <field name="name">dw.operation.type.list</field>
+        <field name="model">dw.operation.type</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="workcenter_id"/>
+                <field name="time_mode"/>
+                <field name="time_value"/>
+                <field name="setup_minutes"/>
+                <field name="is_outsourced"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dw_operation_type_view_form" model="ir.ui.view">
+        <field name="name">dw.operation.type.form</field>
+        <field name="model">dw.operation.type</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Welding"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="workcenter_id"/>
+                            <field name="is_outsourced"/>
+                        </group>
+                        <group>
+                            <field name="time_mode"/>
+                            <field name="time_value"/>
+                            <field name="setup_minutes"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    <field name="note" placeholder="Operating instructions..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="dw_operation_type_action" model="ir.actions.act_window">
+        <field name="name">Fabrication Operations</field>
+        <field name="res_model">dw.operation.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

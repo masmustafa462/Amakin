@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="dim_length" model="dw.dimension.field">
+            <field name="name">Length</field>
+            <field name="code">length</field>
+            <field name="sequence">10</field>
+            <field name="uom_label">mm</field>
+        </record>
+        <record id="dim_width" model="dw.dimension.field">
+            <field name="name">Width</field>
+            <field name="code">width</field>
+            <field name="sequence">20</field>
+            <field name="uom_label">mm</field>
+        </record>
+        <record id="dim_height" model="dw.dimension.field">
+            <field name="name">Height</field>
+            <field name="code">height</field>
+            <field name="sequence">30</field>
+            <field name="uom_label">mm</field>
+        </record>
+        <record id="dim_thickness" model="dw.dimension.field">
+            <field name="name">Thickness</field>
+            <field name="code">thickness</field>
+            <field name="sequence">40</field>
+            <field name="uom_label">mm</field>
+        </record>
+        <record id="dim_diameter" model="dw.dimension.field">
+            <field name="name">Diameter</field>
+            <field name="code">diameter</field>
+            <field name="sequence">50</field>
+            <field name="uom_label">mm</field>
+        </record>
+        <record id="dim_perimeter" model="dw.dimension.field">
+            <field name="name">Perimeter</field>
+            <field name="code">perimeter</field>
+            <field name="sequence">60</field>
+            <field name="uom_label">m</field>
+            <field name="is_computed" eval="True"/>
+        </record>
+        <record id="dim_area" model="dw.dimension.field">
+            <field name="name">Area</field>
+            <field name="code">area</field>
+            <field name="sequence">70</field>
+            <field name="uom_label">m2</field>
+            <field name="is_computed" eval="True"/>
+        </record>
+        <record id="dim_volume" model="dw.dimension.field">
+            <field name="name">Volume</field>
+            <field name="code">volume</field>
+            <field name="sequence">80</field>
+            <field name="uom_label">m3</field>
+            <field name="is_computed" eval="True"/>
+        </record>
+        <record id="dim_weight" model="dw.dimension.field">
+            <field name="name">Weight</field>
+            <field name="code">weight</field>
+            <field name="sequence">90</field>
+            <field name="uom_label">kg</field>
+            <field name="is_computed" eval="True"/>
+        </record>
+        <record id="dim_leaf_count" model="dw.dimension.field">
+            <field name="name">Leaf Count</field>
+            <field name="code">leaf_count</field>
+            <field name="sequence">100</field>
+        </record>
+        <record id="dim_post_count" model="dw.dimension.field">
+            <field name="name">Post Count</field>
+            <field name="code">post_count</field>
+            <field name="sequence">110</field>
+        </record>
+        <record id="dim_section_count" model="dw.dimension.field">
+            <field name="name">Section Count</field>
+            <field name="code">section_count</field>
+            <field name="sequence">120</field>
+        </record>
+        <record id="dim_post_spacing" model="dw.dimension.field">
+            <field name="name">Post Spacing</field>
+            <field name="code">post_spacing</field>
+            <field name="sequence">130</field>
+            <field name="uom_label">mm</field>
+        </record>
+        <record id="dim_step_count" model="dw.dimension.field">
+            <field name="name">Step Count</field>
+            <field name="code">step_count</field>
+            <field name="sequence">140</field>
+        </record>
+        <record id="dim_step_height" model="dw.dimension.field">
+            <field name="name">Step Height</field>
+            <field name="code">step_height</field>
+            <field name="sequence">150</field>
+            <field name="uom_label">mm</field>
+        </record>
+        <record id="dim_step_width" model="dw.dimension.field">
+            <field name="name">Step Width</field>
+            <field name="code">step_width</field>
+            <field name="sequence">160</field>
+            <field name="uom_label">mm</field>
+        </record>
+        <record id="dim_total_rise" model="dw.dimension.field">
+            <field name="name">Total Rise</field>
+            <field name="code">total_rise</field>
+            <field name="sequence">170</field>
+            <field name="uom_label">mm</field>
+        </record>
+        <record id="dim_stair_angle" model="dw.dimension.field">
+            <field name="name">Stair Angle</field>
+            <field name="code">stair_angle</field>
+            <field name="sequence">180</field>
+            <field name="uom_label">deg</field>
+            <field name="is_computed" eval="True"/>
+        </record>
+        <record id="dim_weld_length" model="dw.dimension.field">
+            <field name="name">Welding Length</field>
+            <field name="code">weld_length</field>
+            <field name="sequence">190</field>
+            <field name="uom_label">m</field>
+        </record>
+        <record id="dim_paint_area" model="dw.dimension.field">
+            <field name="name">Painting Area</field>
+            <field name="code">paint_area</field>
+            <field name="sequence">200</field>
+            <field name="uom_label">m2</field>
+        </record>
+        <record id="dim_galv_area" model="dw.dimension.field">
+            <field name="name">Galvanizing Area</field>
+            <field name="code">galv_area</field>
+            <field name="sequence">210</field>
+            <field name="uom_label">m2</field>
+        </record>
+    </data>
+</odoo>

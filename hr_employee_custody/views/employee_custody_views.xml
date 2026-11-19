@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ============================================================== -->
+    <!-- Tree                                                             -->
+    <!-- ============================================================== -->
+    <record id="view_employee_custody_tree" model="ir.ui.view">
+        <field name="name">employee.custody.tree</field>
+        <field name="model">employee.custody</field>
+        <field name="arch" type="xml">
+            <list string="عهد الموظفين" multi_edit="1" sample="1"
+                  decoration-success="state == 'settled' or state == 'returned'"
+                  decoration-warning="state == 'partial'"
+                  decoration-danger="is_overdue"
+                  decoration-muted="state in ('cancelled', 'rejected')"
+                  decoration-info="state == 'issued' and not is_overdue">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="department_id" optional="show"/>
+                <field name="custody_type_id"/>
+                <field name="custody_kind" optional="show"/>
+                <field name="request_date" optional="hide"/>
+                <field name="issue_date"/>
+                <field name="expected_return_date" optional="show"/>
+                <field name="amount" widget="monetary" sum="إجمالي المبلغ"
+                       invisible="context.get('hide_financial')"/>
+                <field name="balance_amount" widget="monetary" sum="إجمالي الرصيد"/>
+                <field name="quantity" optional="hide"/>
+                <field name="remaining_quantity" optional="hide"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="is_overdue" optional="show"/>
+                <field name="overdue_days" optional="hide"/>
+                <field name="state" widget="badge"
+                       decoration-success="state in ('settled', 'returned')"
+                       decoration-warning="state == 'partial'"
+                       decoration-info="state == 'issued'"
+                       decoration-muted="state in ('cancelled', 'rejected')"/>
+                <field name="company_id" optional="hide" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ============================================================== -->
+    <!-- Kanban                                                           -->
+    <!-- ============================================================== -->
+    <record id="view_employee_custody_kanban" model="ir.ui.view">
+        <field name="name">employee.custody.kanban</field>
+        <field name="model">employee.custody</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" class="o_kanban_small_column" sample="1">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="state"/>
+                <field name="amount"/>
+                <field name="balance_amount"/>
+                <field name="currency_id"/>
+                <field name="is_overdue"/>
+                <field name="custody_kind"/>
+                <field name="color"/>
+                <templates>
+                    <!-- Odoo 19 renamed the kanban root template from
+                         "kanban-box" to "card"; the arch parser raises
+                         "Missing 'card' template." otherwise. The card
+                         element itself is now supplied by the renderer,
+                         so the old oe_kanban_card / oe_kanban_global_click
+                         wrapper div is dropped. -->
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between">
+                            <strong><field name="name"/></strong>
+                            <field name="custody_kind"/>
+                        </div>
+                        <div>
+                            <i class="fa fa-user me-1"/><field name="employee_id"/>
+                        </div>
+                        <div t-if="record.custody_kind.raw_value == 'financial'">
+                            <i class="fa fa-money me-1"/>
+                            <field name="balance_amount" widget="monetary"/>
+                        </div>
+                        <div t-if="record.custody_kind.raw_value == 'material'">
+                            <i class="fa fa-cubes me-1"/>
+                            <field name="remaining_quantity"/>
+                        </div>
+                        <footer>
+                            <span t-if="record.is_overdue.raw_value" class="badge text-bg-danger">
+                                متأخرة
+                            </span>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <!-- ============================================================== -->
+    <!-- Form                                                             -->
+    <!-- ============================================================== -->
+    <record id="view_employee_custody_form" model="ir.ui.view">
+        <field name="name">employee.custody.form</field>
+        <field name="model">employee.custody</field>
+        <field name="arch" type="xml">
+            <form string="عهدة موظف">
+                <header>
+                    <button name="action_submit" type="object"
+                            string="تقديم للاعتماد" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_approve" type="object"
+                            string="اعتماد" class="btn-primary"
+                            invisible="state != 'submitted'"
+                            groups="hr_employee_custody.group_custody_officer"/>
+                    <button name="action_reject" type="object"
+                            string="رفض"
+                            invisible="state not in ('submitted','draft','approved')"
+                            groups="hr_employee_custody.group_custody_officer"
+                            confirm="هل أنت متأكد من رفض هذه العهدة؟"/>
+                    <button name="action_issue" type="object"
+                            string="صرف العهدة" class="btn-primary"
+                            invisible="state != 'approved'"
+                            groups="hr_employee_custody.group_custody_officer"/>
+                    <button name="action_settle" type="object"
+                            string="تسوية" class="btn-primary"
+                            invisible="state not in ('issued','partial')"
+                            groups="hr_employee_custody.group_custody_officer"/>
+                    <button name="action_mark_returned" type="object"
+                            string="تم الإرجاع" class="btn-secondary"
+                            invisible="custody_kind != 'material' or state not in ('issued','partial')"/>
+                    <button name="action_mark_lost" type="object"
+                            string="تسجيل كمفقودة"
+                            invisible="custody_kind != 'material' or state not in ('issued','partial')"
+                            confirm="هل ترغب في تسجيل هذه العهدة كمفقودة؟"/>
+                    <button name="action_mark_damaged" type="object"
+                            string="تسجيل كتالفة"
+                            invisible="custody_kind != 'material' or state not in ('issued','partial','returned')"/>
+                    <button name="action_cancel" type="object" string="إلغاء"
+                            invisible="state in ('settled','returned','cancelled')"
+                            confirm="هل تريد إلغاء هذه العهدة؟"/>
+                    <button name="action_reset_to_draft" type="object"
+                            string="إعادة للمسودة"
+                            invisible="state == 'draft'"
+                            groups="hr_employee_custody.group_custody_admin"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="draft,submitted,approved,issued,partial,settled"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_settlements" type="object"
+                                class="oe_stat_button" icon="fa-exchange">
+                            <field name="settlement_count" widget="statinfo" string="التسويات"/>
+                        </button>
+                        <button name="action_view_moves" type="object"
+                                class="oe_stat_button" icon="fa-book"
+                                groups="hr_employee_custody.group_custody_accountant">
+                            <field name="move_count" widget="statinfo" string="القيود"/>
+                        </button>
+                        <button name="action_view_child_custodies" type="object"
+                                class="oe_stat_button" icon="fa-sitemap"
+                                invisible="child_custody_count == 0">
+                            <field name="child_custody_count" widget="statinfo" string="العهد التكميلية"/>
+                        </button>
+                        <button name="action_view_employee_due_moves" type="object"
+                                class="oe_stat_button" icon="fa-balance-scale"
+                                groups="hr_employee_custody.group_custody_accountant"
+                                invisible="employee_due_move_count == 0">
+                            <field name="employee_due_move_count" widget="statinfo"
+                                   string="مستحقات الموظف"/>
+                        </button>
+                        <button name="action_view_employee_custodies" type="object"
+                                class="oe_stat_button" icon="fa-briefcase">
+                            <field name="employee_custody_count" widget="statinfo" string="عهد الموظف"/>
+                        </button>
+                    </div>
+                    <div class="alert alert-info" role="alert"
+                         invisible="not parent_custody_id">
+                        <i class="fa fa-link"/>
+                        <span class="ms-2">هذه عهدة تكميلية للعهدة:</span>
+                        <field name="parent_custody_id" readonly="1" nolabel="1"
+                               class="oe_inline ms-1"/>
+                        <field name="origin_custody_id" invisible="1"/>
+                        <field name="generated_from_over_settlement" invisible="1"/>
+                        <field name="is_due_auto_reconciled" invisible="1"/>
+                        <group invisible="not generated_from_over_settlement">
+                            <group string="القيم المُجمَّدة من التسوية بتجاوز">
+                                <field name="original_difference_amount" readonly="1"/>
+                                <field name="employee_due_amount" readonly="1"/>
+                                <field name="requested_disbursement_amount" readonly="1"/>
+                            </group>
+                            <group string="القيود المرتبطة">
+                                <field name="employee_due_move_id" readonly="1"
+                                       string="قيد التسوية المدمج (الأصلي)"/>
+                                <field name="due_reconciliation_move_id" readonly="1"
+                                       invisible="not due_reconciliation_move_id"
+                                       string="قيد التسوية التلقائية"/>
+                            </group>
+                        </group>
+                        <div class="mt-2"
+                             invisible="not generated_from_over_settlement or state != 'approved'">
+                            <i class="fa fa-info-circle"/>
+                            <span class="ms-1">
+                                يمكنك تعديل مبلغ العهدة قبل الضغط على
+                                "<strong>صرف العهدة</strong>". عند الصرف
+                                سيتم تسجيل قيد تلقائي
+                                (<strong>Dr مستحقات الموظف / Cr حساب العهدة</strong>)
+                                بمبلغ الفرق الأصلي
+                                (<field name="original_difference_amount" readonly="1"
+                                        nolabel="1" class="oe_inline"/>)
+                                فقط، وستظل العهدة بمبلغ فعّال =
+                                (مبلغ الصرف − الفرق) جاهزة للتسويات اللاحقة.
+                            </span>
+                        </div>
+                        <div class="mt-2 text-success"
+                             invisible="not is_due_auto_reconciled">
+                            <i class="fa fa-check-circle"/>
+                            <span class="ms-1">
+                                تمت تسوية مستحق الموظف تلقائياً عبر القيد
+                                <field name="due_reconciliation_move_id" readonly="1"
+                                       nolabel="1" class="oe_inline"/>.
+                                الرصيد الفعّال المتاح الآن
+                                (<field name="balance_amount" readonly="1"
+                                        nolabel="1" class="oe_inline"/>)
+                                وهو جاهز للتسويات اللاحقة.
+                            </span>
+                        </div>
+                    </div>
+
+
+                    <widget name="web_ribbon" title="متأخرة" bg_color="text-bg-danger"
+                            invisible="not is_overdue"/>
+                    <widget name="web_ribbon" title="مسواة" bg_color="text-bg-success"
+                            invisible="state != 'settled'"/>
+
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="employee_id" options="{'no_create': True}"/>
+                            <field name="department_id" readonly="1"/>
+                            <field name="job_id" readonly="1"/>
+                            <field name="manager_id" readonly="1"/>
+                            <field name="user_id"/>
+                        </group>
+                        <group>
+                            <field name="custody_type_id"
+                                   readonly="state not in ('draft','submitted')"/>
+                            <field name="custody_kind" readonly="1"/>
+                            <field name="category_id"/>
+                            <field name="reference"/>
+                            <field name="company_id" groups="base.group_multi_company"
+                                   readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- البيانات الأساسية -->
+                        <page string="البيانات الأساسية" name="main">
+                            <group>
+                                <group string="التواريخ">
+                                    <field name="request_date"
+                                           readonly="state not in ('draft','submitted')"/>
+                                    <field name="issue_date" readonly="state != 'approved'"/>
+                                    <field name="expected_return_date"
+                                           readonly="state in ('settled','returned','cancelled','rejected')"/>
+                                    <field name="settlement_date" readonly="1"/>
+                                </group>
+                                <group string="مؤشرات">
+                                    <field name="is_overdue"/>
+                                    <field name="overdue_days"/>
+                                    <field name="settlement_ratio" widget="progressbar"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- المالية -->
+                        <page string="المالية" name="financial" invisible="custody_kind != 'financial'">
+                            <group>
+                                <group>
+                                    <field name="currency_id"
+                                           groups="base.group_multi_currency"
+                                           readonly="state != 'draft'"/>
+                                    <field name="amount"
+                                           readonly="state not in ('draft','submitted','approved')"/>
+                                    <field name="amount_settled"/>
+                                    <field name="balance_amount"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- العهدة العينية -->
+                        <page string="العهدة العينية" name="material" invisible="custody_kind != 'material'">
+                            <group>
+                                <group>
+                                    <field name="product_id"
+                                           readonly="state not in ('draft','submitted','approved')"/>
+                                    <field name="asset_description"/>
+                                    <field name="serial_number"/>
+                                    <field name="condition"/>
+                                </group>
+                                <group>
+                                    <field name="quantity"
+                                           readonly="state not in ('draft','submitted','approved')"/>
+                                    <field name="uom_id"/>
+                                    <field name="returned_quantity"/>
+                                    <field name="remaining_quantity"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- تفاصيل السطور -->
+                        <page string="التفاصيل" name="lines">
+                            <field name="line_ids" readonly="state in ('settled','returned','cancelled','rejected')">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="product_id"/>
+                                    <field name="asset_description"/>
+                                    <field name="serial_number"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id" optional="hide"/>
+                                    <field name="unit_price"/>
+                                    <field name="subtotal" sum="الإجمالي"/>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="analytic_distribution" widget="analytic_distribution" optional="hide"/>
+                                    <field name="notes" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- التسويات -->
+                        <page string="التسويات" name="settlements">
+                            <field name="settlement_ids" readonly="1">
+                                <list decoration-success="state == 'posted'"
+                                      decoration-muted="state == 'cancelled'">
+                                    <field name="name"/>
+                                    <field name="settlement_date"/>
+                                    <field name="settlement_kind"/>
+                                    <field name="amount" widget="monetary" sum="الإجمالي"/>
+                                    <field name="returned_quantity" sum="إجمالي الكميات"/>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="move_id"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- المحاسبة -->
+                        <page string="المحاسبة" name="accounting"
+                              groups="hr_employee_custody.group_custody_accountant">
+                            <group>
+                                <group>
+                                    <field name="journal_id"
+                                           readonly="state not in ('draft','submitted','approved')"/>
+                                    <field name="custody_account_id"
+                                           readonly="state not in ('draft','submitted','approved')"/>
+                                    <field name="cash_account_id"
+                                           readonly="state not in ('draft','submitted','approved')"/>
+                                </group>
+                                <group>
+                                    <field name="analytic_distribution" widget="analytic_distribution"/>
+                                    <field name="issue_move_id" readonly="1"/>
+                                </group>
+                            </group>
+                            <field name="move_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="journal_id"/>
+                                    <field name="amount_total" widget="monetary"/>
+                                    <field name="currency_id" invisible="1"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <!-- الملاحظات -->
+                        <page string="الملاحظات" name="notes">
+                            <field name="notes"
+                                   placeholder="ملاحظات داخلية..."/>
+                            <group string="سجل الاعتمادات">
+                                <group>
+                                    <field name="submitted_by" readonly="1"/>
+                                    <field name="submitted_date" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="approved_by" readonly="1"/>
+                                    <field name="approved_date" readonly="1"/>
+                                    <field name="issued_by" readonly="1"/>
+                                </group>
+                            </group>
+                            <field name="rejection_reason" invisible="not rejection_reason" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <!-- ============================================================== -->
+    <!-- Search                                                           -->
+    <!-- ============================================================== -->
+    <record id="view_employee_custody_search" model="ir.ui.view">
+        <field name="name">employee.custody.search</field>
+        <field name="model">employee.custody</field>
+        <field name="arch" type="xml">
+            <search string="بحث العهد">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="custody_type_id"/>
+                <field name="reference"/>
+
+                <filter string="عهدي" name="my_custodies"
+                        domain="[('user_id', '=', uid)]"/>
+                <filter string="عهد الموظفين التابعين" name="managed"
+                        domain="[('employee_id.parent_id.user_id', '=', uid)]"/>
+
+                <separator/>
+                <filter string="مسودة" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="مقدمة" name="submitted" domain="[('state', '=', 'submitted')]"/>
+                <filter string="معتمدة" name="approved" domain="[('state', '=', 'approved')]"/>
+                <filter string="مصروفة" name="issued" domain="[('state', '=', 'issued')]"/>
+                <filter string="جزئية" name="partial" domain="[('state', '=', 'partial')]"/>
+                <filter string="مسواة" name="settled" domain="[('state', '=', 'settled')]"/>
+
+                <separator/>
+                <filter string="مالية" name="financial" domain="[('custody_kind', '=', 'financial')]"/>
+                <filter string="عينية" name="material" domain="[('custody_kind', '=', 'material')]"/>
+
+                <separator/>
+                <filter string="متأخرة" name="overdue" domain="[('is_overdue', '=', True)]"/>
+                <filter string="مفتوحة" name="open_custodies"
+                        domain="[('state', 'in', ('issued', 'partial'))]"/>
+
+                <separator/>
+                <filter string="هذا الشهر" name="this_month"
+                        domain="[('issue_date', '&gt;=', (context_today() + relativedelta(day=1)).strftime('%Y-%m-%d'))]"/>
+                <filter string="هذه السنة" name="this_year"
+                        domain="[('issue_date', '&gt;=', (context_today() + relativedelta(month=1, day=1)).strftime('%Y-%m-%d'))]"/>
+
+                <!-- Odoo 19: <group> in a search view accepts neither
+                     "string" nor "expand" (rejected by search_view.rng). -->
+                <group>
+                    <filter string="الموظف" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="القسم" name="group_department" context="{'group_by': 'department_id'}"/>
+                    <filter string="النوع" name="group_type" context="{'group_by': 'custody_type_id'}"/>
+                    <filter string="التصنيف" name="group_category" context="{'group_by': 'category_id'}"/>
+                    <filter string="الحالة" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="تاريخ الإصدار" name="group_issue_date" context="{'group_by': 'issue_date:month'}"/>
+                    <filter string="الشركة" name="group_company" context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ============================================================== -->
+    <!-- Pivot                                                            -->
+    <!-- ============================================================== -->
+    <record id="view_employee_custody_pivot" model="ir.ui.view">
+        <field name="name">employee.custody.pivot</field>
+        <field name="model">employee.custody</field>
+        <field name="arch" type="xml">
+            <pivot string="تحليل العهد" sample="1">
+                <field name="employee_id" type="row"/>
+                <field name="custody_type_id" type="col"/>
+                <field name="amount" type="measure"/>
+                <field name="balance_amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <!-- ============================================================== -->
+    <!-- Graph                                                            -->
+    <!-- ============================================================== -->
+    <record id="view_employee_custody_graph" model="ir.ui.view">
+        <field name="name">employee.custody.graph</field>
+        <field name="model">employee.custody</field>
+        <field name="arch" type="xml">
+            <graph string="مخطط العهد" type="bar" stacked="1" sample="1">
+                <field name="issue_date" interval="month"/>
+                <field name="state"/>
+                <field name="amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <!-- ============================================================== -->
+    <!-- Actions                                                          -->
+    <!-- ============================================================== -->
+    <record id="action_employee_custody" model="ir.actions.act_window">
+        <field name="name">العهد</field>
+        <field name="res_model">employee.custody</field>
+        <field name="view_mode">list,kanban,form,pivot,graph</field>
+        <field name="search_view_id" ref="view_employee_custody_search"/>
+        <field name="context">{'search_default_open_custodies': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">ابدأ بإنشاء عهدة جديدة</p>
+            <p>تتبع العهد المالية والعينية الخاصة بالموظفين مع التسويات والمحاسبة.</p>
+        </field>
+    </record>
+
+    <record id="action_employee_custody_overdue" model="ir.actions.act_window">
+        <field name="name">العهد المتأخرة</field>
+        <field name="res_model">employee.custody</field>
+        <field name="view_mode">list,kanban,form,pivot,graph</field>
+        <field name="domain">[('is_overdue', '=', True)]</field>
+        <field name="context">{'search_default_overdue': 1}</field>
+    </record>
+
+    <record id="action_employee_custody_my" model="ir.actions.act_window">
+        <field name="name">عهدي</field>
+        <field name="res_model">employee.custody</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">['|', ('user_id', '=', uid), ('employee_id.user_id', '=', uid)]</field>
+    </record>
+
+</odoo>

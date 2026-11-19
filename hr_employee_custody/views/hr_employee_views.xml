@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_hr_employee_form_inherit_custody" model="ir.ui.view">
+        <field name="name">hr.employee.form.custody</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_custodies" type="object"
+                        class="oe_stat_button" icon="fa-briefcase"
+                        groups="hr_employee_custody.group_custody_user">
+                    <field name="custody_count" widget="statinfo" string="العهد"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_hr_employee_list_inherit_custody" model="ir.ui.view">
+        <field name="name">hr.employee.list.custody</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='job_id']" position="after">
+                <field name="open_custody_count" optional="hide"/>
+                <field name="has_overdue_custody" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

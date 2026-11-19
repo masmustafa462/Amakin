@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="dw_root_menu" name="Metal Fabrication" sequence="35"
+              web_icon="dw_manufacturing,static/description/icon.png"
+              groups="dw_manufacturing.group_dw_user"/>
+
+    <!-- ============ Operations ============ -->
+    <menuitem id="dw_operations_menu" name="Operations" parent="dw_root_menu" sequence="10"/>
+    <menuitem id="dw_opening_menu" name="Manufacturing Items" parent="dw_operations_menu"
+              action="dw_opening_action" sequence="10"/>
+    <menuitem id="dw_drawing_menu" name="Drawings" parent="dw_operations_menu"
+              action="dw_drawing_action" sequence="20"/>
+    <menuitem id="dw_offcut_menu" name="Material Off-cuts" parent="dw_operations_menu"
+              action="dw_material_offcut_action" sequence="30"
+              groups="dw_manufacturing.group_dw_stock"/>
+    <menuitem id="dw_scrap_menu" name="Fabrication Scrap" parent="dw_operations_menu"
+              action="dw_scrap_action" sequence="40"
+              groups="dw_manufacturing.group_dw_stock"/>
+
+    <!-- ============ Quality ============ -->
+    <menuitem id="dw_quality_menu" name="Quality" parent="dw_root_menu" sequence="20"
+              groups="dw_manufacturing.group_dw_quality"/>
+    <menuitem id="dw_quality_check_menu" name="Quality Checks" parent="dw_quality_menu"
+              action="dw_quality_check_action" sequence="10"/>
+    <menuitem id="dw_quality_issue_menu" name="Quality Issues" parent="dw_quality_menu"
+              action="dw_quality_issue_action" sequence="20"/>
+    <menuitem id="dw_quality_template_menu" name="Inspection Templates" parent="dw_quality_menu"
+              action="dw_quality_template_action" sequence="30"/>
+
+    <!-- ============ Costing ============ -->
+    <menuitem id="dw_costing_menu" name="Costing" parent="dw_root_menu" sequence="30"
+              groups="dw_manufacturing.group_dw_cost_accountant"/>
+    <menuitem id="dw_cost_line_menu" name="Actual Cost Lines" parent="dw_costing_menu"
+              action="dw_production_cost_line_action" sequence="10"/>
+    <menuitem id="dw_project_cost_entry_menu" name="Project Cost Entries" parent="dw_costing_menu"
+              action="dw_project_cost_entry_action" sequence="20"/>
+    <menuitem id="dw_cost_revision_menu" name="Cost Revisions" parent="dw_costing_menu"
+              action="dw_production_cost_revision_action" sequence="30"/>
+
+    <!-- ============ Reporting ============ -->
+    <menuitem id="dw_reporting_menu" name="Reporting" parent="dw_root_menu" sequence="40"/>
+    <menuitem id="dw_report_item_profit_menu" name="Item Profitability" parent="dw_reporting_menu"
+              action="dw_opening_action_profitability" sequence="10"
+              groups="dw_manufacturing.group_dw_profitability"/>
+    <menuitem id="dw_report_project_profit_menu" name="Project Profitability" parent="dw_reporting_menu"
+              action="dw_project_profitability_report_action" sequence="20"
+              groups="dw_manufacturing.group_dw_profitability"/>
+    <menuitem id="dw_report_cost_analysis_menu" name="Cost Analysis" parent="dw_reporting_menu"
+              action="dw_production_cost_line_action" sequence="30"/>
+    <menuitem id="dw_report_variance_menu" name="Cost and Time Variance" parent="dw_reporting_menu"
+              action="dw_cost_variance_report_action" sequence="40"/>
+    <menuitem id="dw_report_material_menu" name="Material Consumption" parent="dw_reporting_menu"
+              action="dw_material_report_action" sequence="50"/>
+    <menuitem id="dw_report_scrap_menu" name="Scrap Analysis" parent="dw_reporting_menu"
+              action="dw_scrap_report_action" sequence="60"/>
+    <menuitem id="dw_report_quality_menu" name="Quality Analysis" parent="dw_reporting_menu"
+              action="dw_quality_report_action" sequence="70"/>
+    <menuitem id="dw_report_workcenter_menu" name="Work Center Performance" parent="dw_reporting_menu"
+              action="dw_workcenter_report_action" sequence="80"/>
+    <menuitem id="dw_report_offcut_menu" name="Available Off-cuts" parent="dw_reporting_menu"
+              action="dw_material_offcut_action" sequence="90"/>
+    <menuitem id="dw_report_drawing_menu" name="Drawing Revision Log" parent="dw_reporting_menu"
+              action="dw_drawing_revision_action" sequence="100"/>
+    <menuitem id="dw_alert_menu" name="Alerts" parent="dw_reporting_menu"
+              action="dw_alert_action" sequence="110"/>
+
+    <!-- ============ Configuration ============ -->
+    <menuitem id="dw_configuration_menu" name="Configuration" parent="dw_root_menu" sequence="90"
+              groups="dw_manufacturing.group_dw_manager"/>
+    <menuitem id="dw_settings_menu" name="Settings" parent="dw_configuration_menu"
+              action="dw_config_settings_action" sequence="1"/>
+    <menuitem id="dw_family_menu" name="Product Families" parent="dw_configuration_menu"
+              action="dw_product_family_action" sequence="10"/>
+    <menuitem id="dw_component_rule_menu" name="Component Rules" parent="dw_configuration_menu"
+              action="dw_component_rule_action" sequence="20"/>
+    <menuitem id="dw_dimension_menu" name="Dimensions" parent="dw_configuration_menu"
+              action="dw_dimension_field_action" sequence="30"/>
+
+    <menuitem id="dw_config_materials_menu" name="Materials" parent="dw_configuration_menu"
+              sequence="40"/>
+    <menuitem id="dw_metal_profile_menu" name="Metal Profiles" parent="dw_config_materials_menu"
+              action="dw_metal_profile_action" sequence="10"/>
+    <menuitem id="dw_metal_type_menu" name="Metal Types" parent="dw_config_materials_menu"
+              action="dw_metal_type_action" sequence="20"/>
+    <menuitem id="dw_metal_grade_menu" name="Metal Grades" parent="dw_config_materials_menu"
+              action="dw_metal_grade_action" sequence="30"/>
+    <menuitem id="dw_finish_type_menu" name="Finish Types" parent="dw_config_materials_menu"
+              action="dw_finish_type_action" sequence="40"/>
+
+    <menuitem id="dw_config_process_menu" name="Process" parent="dw_configuration_menu"
+              sequence="50"/>
+    <menuitem id="dw_operation_type_menu" name="Fabrication Operations" parent="dw_config_process_menu"
+              action="dw_operation_type_action" sequence="10"/>
+    <menuitem id="dw_scrap_reason_menu" name="Scrap Reasons" parent="dw_config_process_menu"
+              action="dw_scrap_reason_action" sequence="20"/>
+
+    <menuitem id="dw_config_costing_menu" name="Costing" parent="dw_configuration_menu"
+              sequence="60"/>
+    <menuitem id="dw_labor_rate_menu" name="Labour Rates" parent="dw_config_costing_menu"
+              action="dw_labor_rate_action" sequence="10"/>
+    <menuitem id="dw_overhead_rule_menu" name="Overhead Rules" parent="dw_config_costing_menu"
+              action="dw_overhead_rule_action" sequence="20"/>
+    <menuitem id="dw_alert_rule_menu" name="Alert Rules" parent="dw_config_costing_menu"
+              action="dw_alert_rule_action" sequence="30"/>
+</odoo>

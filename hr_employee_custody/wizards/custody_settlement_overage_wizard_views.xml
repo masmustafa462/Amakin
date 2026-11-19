@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_custody_settlement_overage_wizard_form" model="ir.ui.view">
+        <field name="name">custody.settlement.overage.wizard.form</field>
+        <field name="model">custody.settlement.overage.wizard</field>
+        <field name="arch" type="xml">
+            <form string="تنبيه: مبلغ التسوية أكبر من رصيد العهدة">
+                <sheet>
+                    <div class="alert alert-warning" role="alert">
+                        <strong>⚠️ تنبيه: مبلغ التسوية يتجاوز رصيد العهدة الحالية</strong>
+                        <p class="mt-2 mb-2">
+                            ستتم تسوية العهدة بالكامل وإنشاء طلب عهدة جديد
+                            بقيمة إجمالي المصروف. يمكن تعديل مبلغ العهدة
+                            الجديدة قبل الصرف. عند الصرف ستتم تسوية مستحق
+                            الموظف تلقائياً، وسيظل رصيد فعّال = (الجديد − الفرق).
+                        </p>
+                        <ul class="mb-2">
+                            <li>يُسجَّل قيد مدمج واحد متوازن:
+                                <strong>Dr مصروف بالكامل /
+                                        Cr العهدة (رصيدها) /
+                                        Cr مستحق الموظف (الفرق)</strong>.
+                            </li>
+                            <li>تُغلق العهدة الأصلية بالكامل (الرصيد = 0).</li>
+                            <li>يتم إنشاء طلب عهدة جديد افتراضياً بإجمالي
+                                المصروف، قابل للتعديل وغير مصروف تلقائياً.</li>
+                            <li>عند صرف العهدة الجديدة يتم تلقائياً تسجيل قيد:
+                                <strong>Dr مستحقات الموظف /
+                                        Cr حساب العهدة</strong>
+                                بمبلغ الفرق الأصلي فقط (وليس المبلغ المُعدَّل).
+                            </li>
+                            <li>يبقى الرصيد الفعّال للعهدة الجديدة = مبلغ الصرف − الفرق.</li>
+                        </ul>
+                        <p class="mb-0"><strong>هل تريد المتابعة؟</strong></p>
+                    </div>
+
+                    <group>
+                        <group string="العهدة الأصلية">
+                            <field name="custody_id" readonly="1"/>
+                            <field name="employee_id" readonly="1"/>
+                            <field name="custody_type_id" readonly="1"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="settlement_wizard_id" invisible="1"/>
+                            <field name="has_expense_lines" invisible="1"/>
+                        </group>
+                        <group string="ملخّص التسوية بتجاوز">
+                            <field name="original_balance" readonly="1"
+                                   help="الرصيد الحالي للعهدة الأصلية -- سيُسجَّل Cr بهذه القيمة."/>
+                            <field name="settlement_amount" readonly="1"
+                                   help="إجمالي المصروف المعتمد -- يُسجَّل Dr بالكامل."/>
+                            <field name="difference_amount" readonly="1"
+                                   help="الفرق المسجَّل Cr على حساب مستحقات الموظف."/>
+                        </group>
+                    </group>
+
+                    <group string="العهدة الجديدة (قابلة للتعديل قبل الصرف)">
+                        <group>
+                            <field name="new_custody_amount"
+                                   help="افتراضياً = إجمالي المصروف. يمكن زيادتها قبل الصرف."/>
+                        </group>
+                        <group>
+                            <field name="expected_active_balance" readonly="1"
+                                   help="مبلغ العهدة الجديدة − الفرق المُجمَّد. هذا هو الرصيد المتاح للموظف بعد الصرف."/>
+                        </group>
+                    </group>
+
+                    <div class="alert alert-info mt-3" role="alert"
+                         invisible="not has_expense_lines">
+                        <i class="fa fa-info-circle"/>
+                        <span class="ms-2">
+                            تم إدخال أسطر مصروف في معالج التسوية. سيُسجَّل
+                            <strong>إجمالي الأسطر بالكامل</strong> على حسابات
+                            المصروف ضمن القيد المدمج، ولن يتم نقل أي سطر إلى
+                            العهدة الجديدة.
+                        </span>
+                    </div>
+                </sheet>
+                <footer>
+                    <button name="action_confirm_overage" type="object"
+                            string="تأكيد وإنشاء عهدة جديدة"
+                            class="btn-primary"/>
+                    <button string="إلغاء" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

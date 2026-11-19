@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_custody_handover_document">
+        <t t-call="web.external_layout">
+            <div class="page" dir="rtl" style="text-align:right; font-family:'Noto Naskh Arabic', 'Amiri', Tahoma, Arial, sans-serif;">
+                <div class="text-center mb-4">
+                    <h2>نموذج تسلّم عهدة</h2>
+                    <h4 t-field="doc.name"/>
+                </div>
+
+                <table class="table table-bordered" style="width:100%;">
+                    <tr>
+                        <th style="width:25%;">الموظف</th>
+                        <td><span t-field="doc.employee_id"/></td>
+                        <th style="width:25%;">الرقم الوظيفي</th>
+                        <td><span t-field="doc.employee_id.barcode"/></td>
+                    </tr>
+                    <tr>
+                        <th>القسم</th>
+                        <td><span t-field="doc.department_id"/></td>
+                        <th>الوظيفة</th>
+                        <td><span t-field="doc.job_id"/></td>
+                    </tr>
+                    <tr>
+                        <th>نوع العهدة</th>
+                        <td><span t-field="doc.custody_type_id"/></td>
+                        <th>التصنيف</th>
+                        <td><span t-field="doc.custody_kind"/></td>
+                    </tr>
+                    <tr>
+                        <th>تاريخ الإصدار</th>
+                        <td><span t-field="doc.issue_date"/></td>
+                        <th>التاريخ المتوقع للتسوية</th>
+                        <td><span t-field="doc.expected_return_date"/></td>
+                    </tr>
+                </table>
+
+                <t t-if="doc.custody_kind == 'financial'">
+                    <h4>البيانات المالية</h4>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>المبلغ</th>
+                            <td>
+                                <span t-field="doc.amount"
+                                      t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                            </td>
+                            <th>العملة</th>
+                            <td><span t-field="doc.currency_id"/></td>
+                        </tr>
+                    </table>
+                </t>
+
+                <t t-if="doc.custody_kind == 'material'">
+                    <h4>تفاصيل الأصل</h4>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>الوصف</th>
+                            <td><span t-field="doc.asset_description"/></td>
+                            <th>الرقم التسلسلي</th>
+                            <td><span t-field="doc.serial_number"/></td>
+                        </tr>
+                        <tr>
+                            <th>المنتج</th>
+                            <td><span t-field="doc.product_id"/></td>
+                            <th>الكمية</th>
+                            <td><span t-field="doc.quantity"/></td>
+                        </tr>
+                    </table>
+                </t>
+
+                <t t-if="doc.line_ids">
+                    <h4>سطور التفصيل</h4>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>البيان</th>
+                                <th>الكمية</th>
+                                <th>سعر الوحدة</th>
+                                <th>الإجمالي</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="doc.line_ids" t-as="line">
+                                <td t-out="line_index + 1"/>
+                                <td><span t-field="line.name"/></td>
+                                <td><span t-field="line.quantity"/></td>
+                                <td>
+                                    <span t-field="line.unit_price"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                                <td>
+                                    <span t-field="line.subtotal"
+                                          t-options='{"widget": "monetary", "display_currency": doc.currency_id}'/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+
+                <div class="mt-5">
+                    <p>أقرّ أنا الموظف المذكور أعلاه باستلامي العهدة الموصوفة، وألتزم باستخدامها للأغراض الوظيفية
+                       وبإرجاعها أو تسويتها خلال الفترة المحددة.</p>
+                </div>
+
+                <table class="table mt-5" style="width:100%; border:none;">
+                    <tr>
+                        <td style="text-align:center; border:none;">
+                            <p><strong>الموظف المتسلِّم</strong></p>
+                            <p t-field="doc.employee_id.name"/>
+                            <p>التوقيع: ..........................</p>
+                            <p>التاريخ: ..........................</p>
+                        </td>
+                        <td style="text-align:center; border:none;">
+                            <p><strong>المعتمد</strong></p>
+                            <p t-field="doc.approved_by.name"/>
+                            <p>التوقيع: ..........................</p>
+                            <p>التاريخ: ..........................</p>
+                        </td>
+                        <td style="text-align:center; border:none;">
+                            <p><strong>الصارف</strong></p>
+                            <p t-field="doc.issued_by.name"/>
+                            <p>التوقيع: ..........................</p>
+                            <p>التاريخ: ..........................</p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_custody_handover">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="hr_employee_custody.report_custody_handover_document"/>
+            </t>
+        </t>
+    </template>
+
+</odoo>
