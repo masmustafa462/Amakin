@@ -104,6 +104,74 @@
                 border-bottom: 1.5pt solid #ffc107;
             }
 
+            /* Row kinds emitted by the dynamic reports (see
+               _line_css_class in eh_account_dynamic_reports). These are
+               declared after the zebra rule above with the same
+               specificity, so they override the alternating background. */
+            .eh_pdf_table tr { page-break-inside: avoid; }
+
+            .eh_pdf_table tr.eh_pdf_account_header td,
+            .eh_pdf_table tr.eh_pdf_partner_header td {
+                background: #efe6d3;
+                color: #1a2332;
+                font-weight: 700;
+                border-top: 1pt solid #C9A372;
+                border-bottom: 0.4pt solid #C9A372;
+            }
+            .eh_pdf_table tr.eh_pdf_opening td {
+                background: #ffffff;
+                color: #495057;
+                font-style: italic;
+            }
+            .eh_pdf_table tr.eh_pdf_account_total td,
+            .eh_pdf_table tr.eh_pdf_partner_total td {
+                background: #f1f3f5;
+                font-weight: 700;
+                border-top: 1pt solid #495057;
+                border-bottom: 1.5pt solid #1a2332;
+            }
+            .eh_pdf_table tr.eh_pdf_computed td {
+                background: #f6efe0;
+                font-weight: 700;
+                border-top: 1pt solid #495057;
+            }
+            .eh_pdf_table tr.eh_pdf_cash_balance td {
+                background: #e9f3ec;
+                font-weight: 700;
+                border-top: 1pt solid #495057;
+            }
+            .eh_pdf_table tr.eh_pdf_balance_check td {
+                background: #fff3cd;
+                font-weight: 700;
+                border-top: 1.5pt solid #ffc107;
+                border-bottom: 1.5pt solid #ffc107;
+            }
+
+            /* Right to left languages (Arabic, ...). The page wrapper gets
+               dir="rtl" and the eh_pdf_rtl class from the report template.
+               Letter spacing and uppercase are switched off because they
+               break the joining of Arabic letters. Numeric cells stay LTR
+               so "(1,234.56)" keeps its brackets in the right place, and
+               sit at the end (left) of the column. */
+            .eh_pdf_page.eh_pdf_rtl {
+                font-family: "EhArabic", "Amiri", "Noto Naskh Arabic", "DejaVu Sans", Arial, sans-serif;
+                direction: rtl;
+            }
+            .eh_pdf_rtl, .eh_pdf_rtl * {
+                letter-spacing: 0 !important;
+                text-transform: none !important;
+            }
+            .eh_pdf_rtl .eh_pdf_table thead th { text-align: right; }
+            .eh_pdf_rtl .eh_pdf_table .text-end {
+                text-align: left;
+                direction: ltr;
+            }
+            .eh_pdf_rtl .eh_pdf_meta span {
+                margin-right: 0;
+                margin-left: 14pt;
+            }
+            .eh_pdf_rtl .eh_pdf_table thead th { font-size: 9.5pt; }
+
             .eh_pdf_summary_box {
                 border: 0.5pt solid #adb5bd;
                 background: #fafbfc;

@@ -224,3 +224,70 @@ class TestPdfFormattingHelpers(EhAccountIntegrationTestCase):
         self.assertEqual(len(line['cells']), 1)
         self.assertEqual(line['cells'][0]['display'], '1,234.56')
         self.assertTrue(line['cells'][0]['align_right'])
+
+    def test_line_css_class_for_general_ledger_rows(self):
+        # The General Ledger row kinds each map to a class that the shared
+        # stylesheet (eh_account_base.eh_report_styles) declares.
+        for kind, expected in (
+            ('account_header', 'eh_pdf_account_header'),
+            ('opening_balance', 'eh_pdf_opening'),
+            ('account_total', 'eh_pdf_account_total'),
+        ):
+            css = self.helper._line_css_class(
+                {'level': 0, 'meta': {'kind': kind}})
+            self.assertIn(expected, css)
+
+    def test_format_iso_date_uses_user_format(self):
+        shown = self.helper._format_iso_date('2026-06-15')
+        self.assertNotEqual(shown, '2026-06-15')
+        self.assertIn('2026', shown)
+
+    def test_format_iso_date_passthrough_for_other_values(self):
+        for value in ('', 'Cash', '15/06/2026', None, 12.5):
+            self.assertEqual(self.helper._format_iso_date(value), value)
+
+    def test_render_lines_formats_date_column(self):
+        payload = {
+            'columns': [
+                {'expression_label': 'description', 'name': 'Description',
+                 'figure_type': 'string'},
+                {'expression_label': 'date', 'name': 'Date',
+                 'figure_type': 'string'},
+            ],
+            'lines': [{
+                'id': 'aml-1', 'name': 'Entry', 'level': 1,
+                'columns': [
+                    {'expression_label': 'date', 'value': '2026-06-15'},
+                ],
+                'meta': {'kind': 'aml'},
+            }],
+        }
+        cell = self.helper._render_lines(payload)[0]['cells'][0]
+        self.assertNotEqual(cell['display'], '2026-06-15')
+        self.assertEqual(cell['value'], '2026-06-15')
+
+    def test_build_meta_display(self):
+        payload = {
+            'generated_at': '2026-06-15T10:30:45.123456',
+            'meta': {
+                'date_from': '2026-01-01', 'date_to': '2026-12-31',
+                'posted_only': True,
+            },
+        }
+        display = self.helper._build_meta_display(payload)
+        self.assertIn('2026', display['period'])
+        self.assertNotIn('2026-01-01', display['period'])
+        self.assertEqual(display['posted_only'], 'Yes')
+        self.assertNotIn('T', display['generated_at'])
+        self.assertNotIn('.123456', display['generated_at'])
+
+    def test_build_meta_display_without_period(self):
+        display = self.helper._build_meta_display(
+            {'meta': {'date_to': '2026-12-31', 'posted_only': False}})
+        self.assertEqual(display['period'], '')
+        self.assertEqual(display['posted_only'], 'No')
+        self.assertEqual(display['generated_at'], '')
+
+    def test_is_rtl_is_false_for_english(self):
+        self.assertFalse(
+            self.helper.with_context(lang='en_US')._is_rtl())

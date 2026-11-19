@@ -55,6 +55,10 @@ No silent fallbacks. Missing config, missing accounts, and malformed input each 
         'web.assets_backend': [
             ('prepend', 'eh_account_base/static/src/scss/eh_tokens.scss'),
         ],
+        # Amiri @font-face for right-to-left (Arabic) PDF reports.
+        'web.report_assets_common': [
+            'eh_account_base/static/src/scss/eh_report_fonts.scss',
+        ],
     },
     'demo': ['demo/base_demo.xml'],
     'images': ['static/description/banner.gif'],

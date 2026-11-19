@@ -24,7 +24,13 @@
                 <t t-set="company" t-value="r.get('doc').env.company"/>
                 <t t-call="eh_account_base.eh_clean_layout">
                     <t t-call="eh_account_base.eh_report_styles"/>
-                    <div class="page eh_pdf_page">
+                    <!-- RTL languages (Arabic, ...) flip the page direction so
+                         the table columns, alignment and indentation mirror;
+                         the eh_pdf_rtl class carries the Arabic font and the
+                         letter-spacing reset (see eh_account_base styles). -->
+                    <t t-set="rtl" t-value="r.get('is_rtl')"/>
+                    <div t-attf-class="page eh_pdf_page #{'eh_pdf_rtl' if rtl else ''}"
+                         t-att-dir="'rtl' if rtl else 'ltr'">
 
                         <t t-call="eh_account_base.eh_report_header">
                             <t t-set="title" t-value="r.get('doc').name"/>
@@ -32,21 +38,21 @@
 
                         <div class="eh_pdf_meta">
                             <t t-set="meta" t-value="r.get('payload').get('meta', {})"/>
+                            <t t-set="md" t-value="r.get('meta_display') or {}"/>
                             <t t-if="meta.get('date_from') and meta.get('date_to')">
                                 <span class="eh_pdf_meta_field"><strong>Period:</strong>
-                                    <t t-out="meta.get('date_from')"/> to
-                                    <t t-out="meta.get('date_to')"/>
+                                    <t t-out="md.get('period')"/>
                                 </span>
                                 <span class="eh_pdf_meta_sep">|</span>
                             </t>
                             <t t-elif="meta.get('date_to')">
                                 <span class="eh_pdf_meta_field"><strong>As at:</strong>
-                                    <t t-out="meta.get('date_to')"/>
+                                    <t t-out="md.get('date_to')"/>
                                 </span>
                                 <span class="eh_pdf_meta_sep">|</span>
                             </t>
                             <span class="eh_pdf_meta_field"><strong>Posted only:</strong>
-                                <t t-out="'Yes' if meta.get('posted_only') else 'No'"/>
+                                <t t-out="md.get('posted_only')"/>
                             </span>
                             <t t-set="curr" t-value="r.get('payload').get('currency') or {}"/>
                             <t t-if="curr">
@@ -64,7 +70,7 @@
                             </t>
                             <span class="eh_pdf_meta_sep">|</span>
                             <span class="eh_pdf_meta_field"><strong>Generated:</strong>
-                                <t t-out="r.get('payload').get('generated_at', '')"/>
+                                <t t-out="md.get('generated_at')"/>
                             </span>
                         </div>
 
@@ -82,7 +88,7 @@
                             <tbody>
                                 <t t-foreach="r.get('lines') or []" t-as="line">
                                     <tr t-att-class="line.get('css_class')">
-                                        <td t-att-style="'padding-left: %sem;' % str((line.get('level') or 0) * 1.0)">
+                                        <td t-att-style="'padding-%s: %sem;' % ('right' if rtl else 'left', str((line.get('level') or 0) * 1.0))">
                                             <t t-out="line.get('name')"/>
                                         </td>
                                         <t t-foreach="line.get('cells') or []" t-as="cell">

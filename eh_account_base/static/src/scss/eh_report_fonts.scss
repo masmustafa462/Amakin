@@ -1,0 +1,19 @@
+/* Arabic font for the suite PDF reports.
+   Amiri (SIL OFL 1.1, see static/src/fonts/AMIRI-LICENSE.txt) ships with the
+   module so right-to-left reports render correctly on any server, with or
+   without Arabic fonts installed system wide. It is only applied through the
+   .eh_pdf_rtl class declared in report/eh_report_base.xml. */
+
+@font-face {
+    font-family: "EhArabic";
+    font-style: normal;
+    font-weight: 400;
+    src: url("/eh_account_base/static/src/fonts/Amiri-Regular.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "EhArabic";
+    font-style: normal;
+    font-weight: 700;
+    src: url("/eh_account_base/static/src/fonts/Amiri-Bold.ttf") format("truetype");
+}

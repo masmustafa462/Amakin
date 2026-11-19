@@ -27,14 +27,21 @@ the rest.
 """
 
 import base64
+import re
+from datetime import datetime
 
-from odoo import api, models
+from odoo import _, api, models
 from odoo.exceptions import UserError
+from odoo.tools.misc import format_date, format_datetime
 
 
 _NUMERIC_FIGURE_TYPES = frozenset({
     'monetary', 'integer', 'float', 'percentage',
 })
+
+# A payload date value is an ISO "YYYY-MM-DD" string. Used to decide whether
+# a cell in a "date" column can be rendered in the user's date format.
+_ISO_DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 
 
 class EhDynamicReportPdf(models.AbstractModel):
@@ -48,12 +55,15 @@ class EhDynamicReportPdf(models.AbstractModel):
         DynamicReport = self.env['eh.account.dynamic.report']
         docs = DynamicReport.browse(docids)
         rendered = []
+        is_rtl = self._is_rtl()
         for doc in docs:
             payload = doc.render(options)
             rendered.append({
                 'doc': doc,
                 'payload': payload,
                 'lines': self._render_lines(payload),
+                'meta_display': self._build_meta_display(payload),
+                'is_rtl': is_rtl,
             })
         return {
             'docs': docs,
@@ -61,6 +71,59 @@ class EhDynamicReportPdf(models.AbstractModel):
             'doc_model': 'eh.account.dynamic.report',
             'data': data,
             'rendered': rendered,
+        }
+
+    @api.model
+    def _is_rtl(self):
+        """True when the language of the current environment is written
+        right to left (Arabic, Hebrew, Persian, ...). Drives the page
+        direction, column order and alignment of the PDF template."""
+        lang = self.env['res.lang']._lang_get(self.env.lang or 'en_US')
+        return bool(lang) and lang.direction == 'rtl'
+
+    @api.model
+    def _format_iso_date(self, value):
+        """Render an ISO "YYYY-MM-DD" string in the user's date format.
+        Anything that is not an ISO date is returned unchanged."""
+        if isinstance(value, str) and _ISO_DATE_RE.match(value):
+            try:
+                return format_date(self.env, value)
+            except (ValueError, TypeError):
+                return value
+        return value
+
+    @api.model
+    def _format_generated_at(self, value):
+        """Render the payload's ISO timestamp (naive UTC) as a localised
+        date and time in the user's timezone, without microseconds."""
+        if not value:
+            return ''
+        try:
+            return format_datetime(self.env, datetime.fromisoformat(value))
+        except (ValueError, TypeError):
+            return value
+
+    @api.model
+    def _build_meta_display(self, payload):
+        """Display ready strings for the strip under the report title.
+
+        Kept in Python so that the period range and the Yes / No answer go
+        through Odoo's translation machinery and the user's date format
+        instead of printing raw ISO values.
+        """
+        meta = payload.get('meta') or {}
+        date_from = self._format_iso_date(meta.get('date_from') or '')
+        date_to = self._format_iso_date(meta.get('date_to') or '')
+        period = ''
+        if date_from and date_to:
+            period = _("%(date_from)s to %(date_to)s",
+                       date_from=date_from, date_to=date_to)
+        return {
+            'period': period,
+            'date_to': date_to,
+            'posted_only': _("Yes") if meta.get('posted_only') else _("No"),
+            'generated_at': self._format_generated_at(
+                payload.get('generated_at')),
         }
 
     @api.model
@@ -74,13 +137,14 @@ class EhDynamicReportPdf(models.AbstractModel):
             for i, line_col in enumerate(line_columns):
                 col_def = columns[i + 1] if (i + 1) < len(columns) else {}
                 figure_type = col_def.get('figure_type', 'string')
+                cell_value = line_col.get('value') if line_col else None
+                display = self._format_value(
+                    cell_value, figure_type, currency=currency)
+                if col_def.get('expression_label') == 'date':
+                    display = self._format_iso_date(display)
                 cells.append({
-                    'value': line_col.get('value') if line_col else None,
-                    'display': self._format_value(
-                        line_col.get('value') if line_col else None,
-                        figure_type,
-                        currency=currency,
-                    ),
+                    'value': cell_value,
+                    'display': display,
                     'align_right': figure_type in _NUMERIC_FIGURE_TYPES,
                 })
             rendered.append({

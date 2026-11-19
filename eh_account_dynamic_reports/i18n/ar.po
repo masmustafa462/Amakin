@@ -953,7 +953,7 @@ msgstr "دفاتر اليومية"
 #: code:addons/eh_account_dynamic_reports/models/general_ledger.py:0
 #: code:addons/eh_account_dynamic_reports/models/partner_ledger.py:0
 msgid "Label"
-msgstr "بطاقة عنوان"
+msgstr "البيان"
 
 #. module: eh_account_dynamic_reports
 #. odoo-javascript
@@ -1060,7 +1060,7 @@ msgstr "المزيد من عوامل التصفية"
 #: code:addons/eh_account_dynamic_reports/models/general_ledger.py:0
 #: code:addons/eh_account_dynamic_reports/models/partner_ledger.py:0
 msgid "Move"
-msgstr "حركة"
+msgstr "القيد"
 
 #. module: eh_account_dynamic_reports
 #. odoo-python
@@ -1970,3 +1970,46 @@ msgstr ""
 #: code:addons/eh_account_dynamic_reports/static/src/components/dynamic_report/dynamic_report.xml:0
 msgid "·shared"
 msgstr "·مشترك"
+
+#. module: eh_account_dynamic_reports
+#: model_terms:ir.ui.view,arch_db:eh_account_dynamic_reports.report_dynamic_pdf_template
+msgid "As at:"
+msgstr "اعتبارًا من:"
+
+#. module: eh_account_dynamic_reports
+#: model_terms:ir.ui.view,arch_db:eh_account_dynamic_reports.report_dynamic_pdf_template
+msgid "Currency:"
+msgstr "العملة:"
+
+#. module: eh_account_dynamic_reports
+#: model_terms:ir.ui.view,arch_db:eh_account_dynamic_reports.report_dynamic_pdf_template
+msgid "Generated:"
+msgstr "تاريخ الإنشاء:"
+
+#. module: eh_account_dynamic_reports
+#: model_terms:ir.ui.view,arch_db:eh_account_dynamic_reports.report_dynamic_pdf_template
+msgid "Period:"
+msgstr "الفترة:"
+
+#. module: eh_account_dynamic_reports
+#: model_terms:ir.ui.view,arch_db:eh_account_dynamic_reports.report_dynamic_pdf_template
+msgid "Posted only:"
+msgstr "المرحّل فقط:"
+
+#. module: eh_account_dynamic_reports
+#. odoo-python
+#: code:addons/eh_account_dynamic_reports/models/report_dynamic_pdf.py:0
+msgid "%(date_from)s to %(date_to)s"
+msgstr "%(date_from)s إلى %(date_to)s"
+
+#. module: eh_account_dynamic_reports
+#. odoo-python
+#: code:addons/eh_account_dynamic_reports/models/report_dynamic_pdf.py:0
+msgid "Yes"
+msgstr "نعم"
+
+#. module: eh_account_dynamic_reports
+#. odoo-python
+#: code:addons/eh_account_dynamic_reports/models/report_dynamic_pdf.py:0
+msgid "No"
+msgstr "لا"

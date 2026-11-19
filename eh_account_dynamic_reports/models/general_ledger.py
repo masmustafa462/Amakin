@@ -823,7 +823,8 @@ class EhGeneralLedgerHandler(models.AbstractModel):
         cur_id = entry.get('currency_id')
         amount_currency = entry.get('amount_currency')
         if cur_id and cur_id in currency_codes and amount_currency:
-            foreign = "%.2f %s" % (
+            # Thousands separators, consistent with the monetary columns.
+            foreign = "{:,.2f} {}".format(
                 round(float(amount_currency), 2), currency_codes[cur_id])
         return {
             'id': "aml-%s" % entry['aml_id'],
