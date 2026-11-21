@@ -82,6 +82,22 @@
             .eh_pdf_table tbody tr:nth-child(even) td {
                 background: #faf6ee;
             }
+            /* Fixed layout (opt in with eh_pdf_table_fixed, widths come
+               from a colgroup): long unbroken values wrap inside their own
+               cell instead of overflowing into the next column. Numbers
+               never wrap. */
+            .eh_pdf_table.eh_pdf_table_fixed { table-layout: fixed; }
+            .eh_pdf_table.eh_pdf_table_fixed thead th,
+            .eh_pdf_table.eh_pdf_table_fixed tbody td {
+                padding-left: 5pt;
+                padding-right: 5pt;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                word-break: break-word;
+            }
+            .eh_pdf_table.eh_pdf_table_fixed thead th { letter-spacing: 0.02em; }
+            .eh_pdf_table.eh_pdf_table_fixed .text-end { white-space: nowrap; }
+
             .eh_pdf_table .text-end { text-align: right; }
             .eh_pdf_table .text-center { text-align: center; }
             .eh_pdf_table .text-muted { color: #6c757d; }

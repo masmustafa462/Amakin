@@ -288,6 +288,41 @@ class TestPdfFormattingHelpers(EhAccountIntegrationTestCase):
         self.assertEqual(display['posted_only'], 'No')
         self.assertEqual(display['generated_at'], '')
 
+    def test_column_widths_sum_to_100_and_match_columns(self):
+        columns = [
+            {'expression_label': 'description', 'figure_type': 'string'},
+            {'expression_label': 'date', 'figure_type': 'string'},
+            {'expression_label': 'journal', 'figure_type': 'string'},
+            {'expression_label': 'move', 'figure_type': 'string'},
+            {'expression_label': 'partner', 'figure_type': 'string'},
+            {'expression_label': 'label', 'figure_type': 'string'},
+            {'expression_label': 'debit', 'figure_type': 'monetary'},
+            {'expression_label': 'credit', 'figure_type': 'monetary'},
+            {'expression_label': 'balance', 'figure_type': 'monetary'},
+            {'expression_label': 'foreign', 'figure_type': 'string'},
+        ]
+        widths = self.helper._column_widths(columns)
+        self.assertEqual(len(widths), len(columns))
+        self.assertAlmostEqual(sum(widths), 100.0, delta=0.1)
+        # The description column must be wider than the narrow code and
+        # date columns, so references wrap instead of overflowing.
+        self.assertGreater(widths[0], widths[1])
+        self.assertGreater(widths[0], widths[2])
+
+    def test_column_widths_defaults_for_unknown_columns(self):
+        columns = [
+            {'expression_label': 'name', 'figure_type': 'string'},
+            {'expression_label': 'balance', 'figure_type': 'monetary'},
+            {'expression_label': 'note', 'figure_type': 'string'},
+        ]
+        widths = self.helper._column_widths(columns)
+        self.assertAlmostEqual(sum(widths), 100.0, delta=0.1)
+        self.assertGreater(widths[0], widths[1])
+
+    def test_column_widths_empty(self):
+        self.assertEqual(self.helper._column_widths([]), [])
+        self.assertEqual(self.helper._column_widths(None), [])
+
     def test_is_rtl_is_false_for_english(self):
         self.assertFalse(
             self.helper.with_context(lang='en_US')._is_rtl())

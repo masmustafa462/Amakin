@@ -63,6 +63,7 @@ class EhDynamicReportPdf(models.AbstractModel):
                 'payload': payload,
                 'lines': self._render_lines(payload),
                 'meta_display': self._build_meta_display(payload),
+                'col_widths': self._column_widths(payload.get('columns')),
                 'is_rtl': is_rtl,
             })
         return {
@@ -72,6 +73,42 @@ class EhDynamicReportPdf(models.AbstractModel):
             'data': data,
             'rendered': rendered,
         }
+
+    # Relative width weights per column, keyed by expression_label. The
+    # table uses table-layout: fixed so a long unbroken value (a vendor
+    # reference, a long move name) wraps inside its own cell instead of
+    # running over the neighbouring column.
+    _COLUMN_WEIGHTS = {
+        'description': 22, 'date': 8, 'journal': 6, 'move': 12,
+        'partner': 13, 'label': 15, 'foreign': 11,
+    }
+    _WEIGHT_FIRST_COLUMN = 24
+    _WEIGHT_NUMERIC = 10
+    _WEIGHT_TEXT = 12
+
+    @api.model
+    def _column_widths(self, columns):
+        """Percentage width of every column, summing to 100.
+
+        Known General Ledger columns use their weight; any other column
+        gets a default by type (numeric columns narrower than text ones,
+        the first column wider). Returns [] when there are no columns.
+        """
+        weights = []
+        for idx, col in enumerate(columns or []):
+            weight = self._COLUMN_WEIGHTS.get(col.get('expression_label'))
+            if weight is None:
+                if idx == 0:
+                    weight = self._WEIGHT_FIRST_COLUMN
+                elif col.get('figure_type') in _NUMERIC_FIGURE_TYPES:
+                    weight = self._WEIGHT_NUMERIC
+                else:
+                    weight = self._WEIGHT_TEXT
+            weights.append(weight)
+        total = float(sum(weights))
+        if not total:
+            return []
+        return [round(w * 100.0 / total, 2) for w in weights]
 
     @api.model
     def _is_rtl(self):

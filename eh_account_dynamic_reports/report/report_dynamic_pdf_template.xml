@@ -74,7 +74,12 @@
                             </span>
                         </div>
 
-                        <table class="eh_pdf_table">
+                        <table class="eh_pdf_table eh_pdf_table_fixed">
+                            <colgroup>
+                                <t t-foreach="r.get('col_widths') or []" t-as="w">
+                                    <col t-att-style="'width: %s%%;' % w"/>
+                                </t>
+                            </colgroup>
                             <thead>
                                 <tr>
                                     <t t-foreach="r.get('payload').get('columns') or []"
