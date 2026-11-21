@@ -319,6 +319,27 @@ class TestPdfFormattingHelpers(EhAccountIntegrationTestCase):
         self.assertAlmostEqual(sum(widths), 100.0, delta=0.1)
         self.assertGreater(widths[0], widths[1])
 
+    def test_bidi_safe_pads_mixed_text_ending_in_arabic(self):
+        # Digits/Latin + Arabic ending with an Arabic letter triggers the
+        # wkhtmltopdf overprint bug; a trailing no-break space avoids it.
+        for text in ('13900001 إيرادات مؤجلة', 'Total إجمالي'):
+            self.assertEqual(
+                self.helper._bidi_safe(text), text + ' ')
+
+    def test_bidi_safe_leaves_other_text_unchanged(self):
+        for text in (
+            'الرصيد الافتتاحي',                # pure Arabic
+            '20020001 اعادة تأهيل المصنع 1',   # ends in a digit
+            '43600004 رسوم معادن (%6)',        # ends in punctuation
+            'Cash',                            # pure Latin
+            '', None,
+        ):
+            self.assertEqual(self.helper._bidi_safe(text), text)
+
+    def test_bidi_safe_is_a_noop_for_ltr(self):
+        text = '13900001 إيرادات مؤجلة'
+        self.assertEqual(self.helper._bidi_safe(text, rtl=False), text)
+
     def test_column_widths_empty(self):
         self.assertEqual(self.helper._column_widths([]), [])
         self.assertEqual(self.helper._column_widths(None), [])

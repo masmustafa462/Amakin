@@ -43,6 +43,11 @@ _NUMERIC_FIGURE_TYPES = frozenset({
 # a cell in a "date" column can be rendered in the user's date format.
 _ISO_DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 
+# Arabic script blocks (Arabic, Supplement, Extended-A, Presentation Forms).
+_ARABIC_CHAR_RE = re.compile(
+    '[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]')
+_LATIN_OR_DIGIT_RE = re.compile(r'[0-9A-Za-z]')
+
 
 class EhDynamicReportPdf(models.AbstractModel):
     _name = 'report.eh_account_dynamic_reports.report_dynamic_pdf_template'
@@ -111,6 +116,26 @@ class EhDynamicReportPdf(models.AbstractModel):
         return [round(w * 100.0 / total, 2) for w in weights]
 
     @api.model
+    def _bidi_safe(self, text, rtl=True):
+        """Work around a wkhtmltopdf (Qt WebKit) bidi bug that prints the
+        glyphs of some cells on top of each other.
+
+        A bold run that mixes Arabic with digits or Latin letters and ends
+        with an Arabic letter ("13900001 إيرادات مؤجلة", an account header
+        or total row) is laid out with its parts at the same position. A
+        trailing no-break space avoids it. It is added only for exactly
+        that case: pure Arabic text, or mixed text that already ends in a
+        digit or punctuation, renders correctly and a trailing character
+        would shift it.
+        """
+        if not rtl or not text or not isinstance(text, str):
+            return text
+        if (_ARABIC_CHAR_RE.match(text[-1])
+                and _LATIN_OR_DIGIT_RE.search(text)):
+            return text + ' '
+        return text
+
+    @api.model
     def _is_rtl(self):
         """True when the language of the current environment is written
         right to left (Arabic, Hebrew, Persian, ...). Drives the page
@@ -167,6 +192,7 @@ class EhDynamicReportPdf(models.AbstractModel):
     def _render_lines(self, payload):
         columns = payload.get('columns') or []
         currency = payload.get('currency') or {}
+        rtl = self._is_rtl()
         rendered = []
         for line in payload.get('lines') or []:
             cells = []
@@ -179,6 +205,8 @@ class EhDynamicReportPdf(models.AbstractModel):
                     cell_value, figure_type, currency=currency)
                 if col_def.get('expression_label') == 'date':
                     display = self._format_iso_date(display)
+                elif figure_type not in _NUMERIC_FIGURE_TYPES:
+                    display = self._bidi_safe(display, rtl)
                 cells.append({
                     'value': cell_value,
                     'display': display,
@@ -186,7 +214,7 @@ class EhDynamicReportPdf(models.AbstractModel):
                 })
             rendered.append({
                 'id': line.get('id'),
-                'name': line.get('name', ''),
+                'name': self._bidi_safe(line.get('name', ''), rtl),
                 'level': int(line.get('level') or 0),
                 'kind': (line.get('meta') or {}).get('kind', ''),
                 'cells': cells,
