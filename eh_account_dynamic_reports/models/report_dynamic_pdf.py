@@ -56,7 +56,11 @@ class EhDynamicReportPdf(models.AbstractModel):
     @api.model
     def _get_report_values(self, docids, data=None):
         data = data or {}
-        options = data.get('options') or {}
+        # A printed report must contain every journal item. The viewer sends
+        # its screen options, which carry lazy_expand (accounts start
+        # collapsed and load their items on demand), so force the eager path
+        # or each account would print only header, opening and total.
+        options = dict(data.get('options') or {}, eager_expand=True)
         DynamicReport = self.env['eh.account.dynamic.report']
         docs = DynamicReport.browse(docids)
         rendered = []

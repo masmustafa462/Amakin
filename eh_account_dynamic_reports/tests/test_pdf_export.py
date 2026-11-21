@@ -108,6 +108,19 @@ class TestPdfRendering(EhAccountIntegrationTestCase):
         content = report.render_pdf(self.options)
         self._assert_pdf_bytes(content, 'General Ledger')
 
+    def test_general_ledger_pdf_includes_journal_items_for_screen_options(self):
+        # The OWL viewer sends its screen options (lazy_expand=True) to the
+        # PDF export. The printed report must still list every journal item
+        # of each account, not just the collapsed header/opening/total rows.
+        report = self.reports.get('general_ledger')
+        self.assertTrue(report)
+        screen_options = dict(self.options, lazy_expand=True)
+        values = self.env[
+            'report.eh_account_dynamic_reports.report_dynamic_pdf_template'
+        ]._get_report_values([report.id], data={'options': screen_options})
+        kinds = [line['kind'] for line in values['rendered'][0]['lines']]
+        self.assertIn('aml', kinds)
+
     def test_partner_ledger_pdf(self):
         report = self.reports.get('partner_ledger')
         self.assertTrue(report)
