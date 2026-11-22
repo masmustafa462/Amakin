@@ -404,21 +404,18 @@ class TestPdfFormattingHelpers(EhAccountIntegrationTestCase):
         self.assertAlmostEqual(sum(widths), 100.0, delta=0.1)
         self.assertGreater(widths[0], widths[1])
 
-    def test_bidi_safe_pads_mixed_text_ending_in_arabic(self):
-        # Digits/Latin + Arabic ending with an Arabic letter triggers the
-        # wkhtmltopdf overprint / clipping bug; RTL marks avoid it.
-        for text in ('13900001 إيرادات مؤجلة', 'إجمالي 13900001 إيرادات'):
+    def test_bidi_safe_marks_mixed_arabic_text(self):
+        # Arabic mixed with digits, Latin or " - " is pinned right to left
+        # with zero width marks (wkhtmltopdf overprint / clipping bugs).
+        m = '\u200f'
+        for text in ('13900001 إيرادات مؤجلة', 'اعادة تأهيل - صيانة',
+                     '20020001 اعادة تأهيل المصنع - صيانة 1'):
             self.assertEqual(
-                self.helper._bidi_safe(text), '\u200f' + text + '\u200f')
+                self.helper._bidi_safe(text),
+                m + text.replace(' ', m + ' ' + m) + m)
 
     def test_bidi_safe_leaves_other_text_unchanged(self):
-        for text in (
-            'الرصيد الافتتاحي',                # pure Arabic
-            '20020001 اعادة تأهيل المصنع 1',   # ends in a digit
-            '43600004 رسوم معادن (%6)',        # ends in punctuation
-            'Cash',                            # pure Latin
-            '', None,
-        ):
+        for text in ('الرصيد الافتتاحي', 'Cash', 'Cash - Bank', '', None):
             self.assertEqual(self.helper._bidi_safe(text), text)
 
     def test_bidi_safe_is_a_noop_for_ltr(self):

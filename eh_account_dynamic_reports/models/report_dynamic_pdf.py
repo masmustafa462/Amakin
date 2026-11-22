@@ -49,6 +49,8 @@ _ISO_DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 # Arabic script blocks (Arabic, Supplement, Extended-A, Presentation Forms).
 _ARABIC_CHAR_RE = re.compile(
     '[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]')
+_ANY_ARABIC_RE = re.compile(r'[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]')
+_MIXED_TRIGGER_RE = re.compile(r'[0-9A-Za-z\-/()%]')
 _LATIN_OR_DIGIT_RE = re.compile(r'[0-9A-Za-z]')
 
 
@@ -234,19 +236,20 @@ class EhDynamicReportPdf(models.AbstractModel):
         """Work around a wkhtmltopdf (Qt WebKit) bidi bug that prints the
         glyphs of some cells on top of each other.
 
-        Text that mixes Arabic with digits or Latin letters and ends with
-        an Arabic letter ("13900001 إيرادات مؤجلة", "إجمالي 13900001 ...",
-        account header / total rows) is either printed with its parts on
-        top of each other (bold) or shifted past the cell edge so its first
-        word is cut off. Wrapping it in right-to-left marks (zero width)
-        avoids both. Pure Arabic text, or mixed text that already ends in a
-        digit or punctuation, renders correctly and is left untouched.
+        Arabic text that also holds digits, Latin letters or neutral
+        punctuation ("20020001 اعادة تأهيل المصنع - صيانة 1", "إجمالي
+        13900001 ...") is laid out wrongly by wkhtmltopdf: parts overprint,
+        or the words before a " - " are pushed past the cell edge and cut.
+        Right-to-left marks (zero width) at both ends and around every
+        space pin the direction of each run and render it correctly. Pure
+        Arabic text, and text without Arabic, is left untouched.
         """
         if not rtl or not text or not isinstance(text, str):
             return text
-        if (_ARABIC_CHAR_RE.match(text[-1])
-                and _LATIN_OR_DIGIT_RE.search(text)):
-            return '\u200f' + text + '\u200f'
+        if (_ANY_ARABIC_RE.search(text)
+                and _MIXED_TRIGGER_RE.search(text)):
+            mark = '\u200f'
+            return mark + text.replace(' ', mark + ' ' + mark) + mark
         return text
 
     @api.model
