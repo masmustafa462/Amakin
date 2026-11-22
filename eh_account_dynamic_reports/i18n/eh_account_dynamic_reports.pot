@@ -1945,3 +1945,9 @@ msgstr ""
 #: code:addons/eh_account_dynamic_reports/models/report_dynamic_pdf.py:0
 msgid "No"
 msgstr ""
+
+#. module: eh_account_dynamic_reports
+#. odoo-python
+#: code:addons/eh_account_dynamic_reports/models/report_dynamic_pdf.py:0
+msgid "Showing %(shown)s of %(total)s journal items, as displayed on screen"
+msgstr ""

@@ -108,18 +108,60 @@ class TestPdfRendering(EhAccountIntegrationTestCase):
         content = report.render_pdf(self.options)
         self._assert_pdf_bytes(content, 'General Ledger')
 
-    def test_general_ledger_pdf_includes_journal_items_for_screen_options(self):
-        # The OWL viewer sends its screen options (lazy_expand=True) to the
-        # PDF export. The printed report must still list every journal item
-        # of each account, not just the collapsed header/opening/total rows.
+    def _gl_rendered_lines(self, options):
         report = self.reports.get('general_ledger')
         self.assertTrue(report)
-        screen_options = dict(self.options, lazy_expand=True)
         values = self.env[
             'report.eh_account_dynamic_reports.report_dynamic_pdf_template'
-        ]._get_report_values([report.id], data={'options': screen_options})
-        kinds = [line['kind'] for line in values['rendered'][0]['lines']]
+        ]._get_report_values([report.id], data={'options': options})
+        return values['rendered'][0]['lines']
+
+    def test_general_ledger_pdf_mirrors_collapsed_screen(self):
+        # Screen options with nothing expanded: the printed report shows
+        # each account collapsed (header, opening, total), exactly as on
+        # screen, with no journal items.
+        lines = self._gl_rendered_lines(
+            dict(self.options, lazy_expand=True))
+        kinds = [line['kind'] for line in lines]
+        self.assertNotIn('aml', kinds)
+        self.assertIn('account_header', kinds)
+
+    def test_general_ledger_pdf_lists_items_of_expanded_account_only(self):
+        # The user opened the cash account on screen (and it loaded its
+        # items). Only that account prints its journal items, after its
+        # opening balance row and before its total.
+        base = dict(self.options, lazy_expand=True)
+        collapsed = self._gl_rendered_lines(base)
+        cash_header = 'account-%s' % self.account_cash.id
+        self.assertIn(cash_header, [line['id'] for line in collapsed])
+
+        expanded = self._gl_rendered_lines(
+            dict(base, pdf_expanded={cash_header: 80}))
+        kinds = [line['kind'] for line in expanded]
         self.assertIn('aml', kinds)
+
+        ids = [line['id'] for line in expanded]
+        head = ids.index(cash_header)
+        total = next(
+            i for i, line in enumerate(expanded)
+            if i > head and line['kind'] == 'account_total')
+        between = [expanded[i]['kind'] for i in range(head + 1, total)]
+        self.assertEqual(between[0], 'opening_balance')
+        self.assertIn('aml', between[1:])
+        # Other accounts stay collapsed: every aml row sits in that range.
+        aml_positions = [i for i, k in enumerate(kinds) if k == 'aml']
+        self.assertTrue(all(head < i < total for i in aml_positions))
+
+    def test_general_ledger_pdf_notes_partially_loaded_account(self):
+        # Screen had loaded only the first item of an account with more:
+        # print that one and a note row saying the list is partial.
+        base = dict(self.options, lazy_expand=True)
+        cash_header = 'account-%s' % self.account_cash.id
+        lines = self._gl_rendered_lines(
+            dict(base, pdf_expanded={cash_header: 1}))
+        kinds = [line['kind'] for line in lines]
+        self.assertEqual(kinds.count('aml'), 1)
+        self.assertIn('load_more', kinds)
 
     def test_partner_ledger_pdf(self):
         report = self.reports.get('partner_ledger')

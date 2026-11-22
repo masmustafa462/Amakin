@@ -419,11 +419,6 @@ class EhAccountDynamicReport(models.Model):
         runs against the cached payload directly.
         """
         self.ensure_one()
-        # An export must contain every row. The OWL viewer sends its screen
-        # options, which carry lazy_expand (account rows start collapsed and
-        # fetch their journal items on demand); without eager_expand the
-        # file would hold only the collapsed header/opening/total rows.
-        options = dict(options or {}, eager_expand=True)
         payload = self.render(options, use_cache=use_cache)
         writer = XlsxReportWriter(report_name=self.name)
         return writer.write_payload(payload)

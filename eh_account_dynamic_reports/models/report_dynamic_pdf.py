@@ -56,17 +56,22 @@ class EhDynamicReportPdf(models.AbstractModel):
     @api.model
     def _get_report_values(self, docids, data=None):
         data = data or {}
-        # A printed report must contain every journal item. The viewer sends
-        # its screen options, which carry lazy_expand (accounts start
-        # collapsed and load their items on demand), so force the eager path
-        # or each account would print only header, opening and total.
-        options = dict(data.get('options') or {}, eager_expand=True)
+        # The printed report mirrors the screen. The viewer renders with
+        # lazy_expand (each account is a collapsed header/opening/total) and
+        # fetches journal items only for the accounts the user opened. It
+        # sends that state as options['pdf_expanded'] = {line_id: number of
+        # items loaded}. Split it off before rendering so the render (and its
+        # cache key) is the same one the screen used.
+        options = dict(data.get('options') or {})
+        expanded = options.pop('pdf_expanded', None) or {}
         DynamicReport = self.env['eh.account.dynamic.report']
         docs = DynamicReport.browse(docids)
         rendered = []
         is_rtl = self._is_rtl()
         for doc in docs:
             payload = doc.render(options)
+            payload = self._splice_expanded_lines(
+                doc, payload, options, expanded)
             rendered.append({
                 'doc': doc,
                 'payload': payload,
@@ -82,6 +87,59 @@ class EhDynamicReportPdf(models.AbstractModel):
             'data': data,
             'rendered': rendered,
         }
+
+    @api.model
+    def _splice_expanded_lines(self, doc, payload, options, expanded):
+        """Add the journal items of every account the user opened on screen.
+
+        `expanded` maps a lazy line id to the number of items the screen had
+        loaded for it. Each is fetched with the same expand_line RPC the
+        viewer uses (same filters, running balance and currency handling),
+        and inserted after the account's opening-balance row so the running
+        balance reads top to bottom. Accounts that were collapsed on screen
+        stay collapsed. When the screen had only loaded part of an account,
+        a final note row says so. The payload is returned unchanged when
+        nothing is expanded. Only lines flagged lazy are looked up, so a
+        report rendered eagerly (no lazy lines) is never altered.
+        """
+        if not expanded or not isinstance(expanded, dict):
+            return payload
+        lines = payload.get('lines') or []
+        spliced = []
+        i = 0
+        while i < len(lines):
+            line = lines[i]
+            spliced.append(line)
+            i += 1
+            count = expanded.get(line.get('id')) if line.get('lazy') else None
+            if not count:
+                continue
+            try:
+                limit = max(int(count), 1)
+            except (TypeError, ValueError):
+                continue
+            # Keep the opening-balance row ahead of the items.
+            nxt = lines[i] if i < len(lines) else None
+            if nxt and (nxt.get('meta') or {}).get('kind') == 'opening_balance':
+                spliced.append(nxt)
+                i += 1
+            result = doc.expand_line(options, line['id'], 0, limit)
+            spliced.extend(result.get('child_lines') or [])
+            if result.get('has_more'):
+                spliced.append({
+                    'id': 'more-%s' % line['id'],
+                    'name': _(
+                        "Showing %(shown)s of %(total)s journal items, "
+                        "as displayed on screen",
+                        shown=len(result.get('child_lines') or []),
+                        total=result.get('total_count') or 0,
+                    ),
+                    'level': (line.get('level') or 0) + 1,
+                    'columns': [],
+                    'meta': {'kind': 'load_more'},
+                })
+        payload = dict(payload, lines=spliced)
+        return payload
 
     # Relative width weights per column, keyed by expression_label. The
     # table uses table-layout: fixed so a long unbroken value (a vendor

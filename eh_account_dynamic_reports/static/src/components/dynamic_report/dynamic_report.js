@@ -138,8 +138,9 @@ export class EhDynamicReportViewer extends Component {
                 reconcile_state: "open",
                 // Opt into the server's lazy expand-on-demand path. Account
                 // leaves arrive collapsed; their journal items are fetched
-                // only when expanded. Export/PDF render eagerly server-side
-                // and ignore this flag, so paper output is unchanged.
+                // only when expanded. The PDF mirrors the screen: onPrintPdf
+                // adds pdf_expanded (the accounts opened and how many items
+                // were loaded) and the server fetches those items only.
                 lazy_expand: true,
                 // WS3 ghost-feature options. All four pass straight through
                 // render()->compute() and only change behaviour when set, so
@@ -509,13 +510,36 @@ export class EhDynamicReportViewer extends Component {
         }
     }
 
+    pdfExpandedMap() {
+        // What the screen is showing, for the printed report to mirror:
+        // { lazy line id: number of journal items currently loaded } for
+        // every lazy account the user has opened. Collapsed accounts are
+        // left out, so they print collapsed exactly as on screen.
+        const expanded = new Set(this.state.expandedLines);
+        const map = {};
+        const lines = (this.state.payload && this.state.payload.lines) || [];
+        for (const line of lines) {
+            if (!line.lazy || !expanded.has(line.id)) continue;
+            const entry = this.state.childLines[line.id];
+            const loaded = entry && entry.lines ? entry.lines.length : 0;
+            if (loaded > 0) {
+                map[line.id] = loaded;
+            }
+        }
+        return map;
+    }
+
     async onPrintPdf() {
         if (!this.state.reportId) return;
         try {
+            const options = {
+                ...this.state.options,
+                pdf_expanded: this.pdfExpandedMap(),
+            };
             const action = await this.orm.call(
                 "eh.account.dynamic.report",
                 "export_pdf_attachment",
-                [[this.state.reportId], this.state.options],
+                [[this.state.reportId], options],
             );
             await this.action.doAction(action);
         } catch (exc) {
