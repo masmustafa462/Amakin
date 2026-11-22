@@ -75,6 +75,19 @@
                   sequence="60"
                   groups="account.group_account_user"/>
 
+        <record id="action_open_partner_account_statement_viewer" model="ir.actions.client">
+            <field name="name">Customer / Vendor Account Statement</field>
+            <field name="tag">eh_account_dynamic_report</field>
+            <field name="context">{'report_code': 'partner_account_statement'}</field>
+        </record>
+
+        <menuitem id="menu_partner_account_statement"
+                  name="Customer / Vendor Account Statement"
+                  parent="account.menu_finance_reports"
+                  action="action_open_partner_account_statement_viewer"
+                  sequence="62"
+                  groups="account.group_account_user"/>
+
         <record id="action_open_partner_ledger_viewer" model="ir.actions.client">
             <field name="name">Partner Ledger</field>
             <field name="tag">eh_account_dynamic_report</field>

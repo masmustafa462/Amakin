@@ -74,6 +74,14 @@
             <field name="description">Per partner ledger with opening balance, every journal item in the period attached to that partner, and a partner total. Drill down: partner headers open the journal items list filtered to that partner; entry rows open the specific journal entry form.</field>
         </record>
 
+        <record id="report_partner_account_statement" model="eh.account.dynamic.report">
+            <field name="code">partner_account_statement</field>
+            <field name="name">Customer / Vendor Account Statement</field>
+            <field name="handler_model">eh.account.dynamic.report.handler.partner_account_statement</field>
+            <field name="sequence">55</field>
+            <field name="description">General Ledger layout for one customer or vendor: opening balance, every journal item of the period (date, journal, entry, partner, label, debit, credit, running balance, amount in currency) and the account total, on the receivable and payable accounts. Requires choosing the customer or vendor in the Partner filter.</field>
+        </record>
+
         <record id="report_aged_receivable" model="eh.account.dynamic.report">
             <field name="code">aged_receivable</field>
             <field name="name">Aged Receivable</field>

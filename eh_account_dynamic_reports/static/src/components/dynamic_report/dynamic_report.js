@@ -342,7 +342,10 @@ export class EhDynamicReportViewer extends Component {
             this.tryFetch("account.journal", [], ["id", "name", "code"], { limit: 200, order: "name" }),
             this.tryFetch(
                 "res.partner",
-                [["customer_rank", ">", 0], ["parent_id", "=", false]],
+                this.reportCode === "partner_account_statement"
+                    // Account statement: customers AND vendors.
+                    ? ["|", ["customer_rank", ">", 0], ["supplier_rank", ">", 0], ["parent_id", "=", false]]
+                    : [["customer_rank", ">", 0], ["parent_id", "=", false]],
                 ["id", "name"],
                 { limit: 100, order: "name" },
             ),

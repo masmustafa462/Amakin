@@ -1961,3 +1961,23 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:eh_account_dynamic_reports.report_dynamic_pdf_template
 msgid "To:"
 msgstr ""
+
+#. module: eh_account_dynamic_reports
+#. odoo-python
+#: code:addons/eh_account_dynamic_reports/models/partner_account_statement.py:0
+#: model:eh.account.dynamic.report,name:eh_account_dynamic_reports.report_partner_account_statement
+#: model:ir.actions.client,name:eh_account_dynamic_reports.action_open_partner_account_statement_viewer
+#: model:ir.ui.menu,name:eh_account_dynamic_reports.menu_partner_account_statement
+msgid "Customer / Vendor Account Statement"
+msgstr ""
+
+#. module: eh_account_dynamic_reports
+#. odoo-python
+#: code:addons/eh_account_dynamic_reports/models/partner_account_statement.py:0
+msgid "Select a customer or vendor in the Partner filter to show the account statement."
+msgstr ""
+
+#. module: eh_account_dynamic_reports
+#: model_terms:ir.ui.view,arch_db:eh_account_dynamic_reports.report_dynamic_pdf_template
+msgid "Partner:"
+msgstr ""

@@ -3,6 +3,7 @@ from . import profit_and_loss
 from . import balance_sheet
 from . import general_ledger
 from . import partner_ledger
+from . import partner_account_statement
 from . import aged_base
 from . import aged_receivable
 from . import aged_payable
