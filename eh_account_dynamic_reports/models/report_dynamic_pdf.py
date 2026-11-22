@@ -67,12 +67,15 @@ class EhDynamicReportPdf(models.AbstractModel):
         # cache key) is the same one the screen used.
         options = dict(data.get('options') or {})
         expanded = options.pop('pdf_expanded', None) or {}
+        # The in-table search box: only the rows it leaves on screen print.
+        table_query = options.pop('pdf_query', None) or ''
         DynamicReport = self.env['eh.account.dynamic.report']
         docs = DynamicReport.browse(docids)
         rendered = []
         is_rtl = self._is_rtl()
         for doc in docs:
             payload = doc.render(options)
+            payload = self._apply_table_filter(payload, table_query)
             try:
                 payload = self._splice_expanded_lines(
                     doc, payload, options, expanded)
@@ -189,23 +192,61 @@ class EhDynamicReportPdf(models.AbstractModel):
         return [round(w * 100.0 / total, 2) for w in weights]
 
     @api.model
+    def _apply_table_filter(self, payload, query):
+        """Keep only the rows the viewer's in-table search leaves visible.
+
+        Same rule as the screen (computeFilterKeepSet in report_table_logic):
+        every row whose name contains the query, plus its ancestors (context)
+        and the descendants of a matched group. An empty query keeps all.
+        """
+        q = (query or '').strip().lower()
+        lines = payload.get('lines') or []
+        if not q or not lines:
+            return payload
+        by_id = {line.get('id'): line for line in lines}
+        direct = {line.get('id') for line in lines
+                  if q in (line.get('name') or '').lower()}
+        keep = set()
+        for line_id in direct:
+            keep.add(line_id)
+            seen = set()
+            parent_id = (by_id.get(line_id) or {}).get('parent_id')
+            while parent_id and parent_id not in seen:
+                seen.add(parent_id)
+                keep.add(parent_id)
+                parent_id = (by_id.get(parent_id) or {}).get('parent_id')
+        for line in lines:
+            if line.get('id') in keep:
+                continue
+            seen = set()
+            parent_id = line.get('parent_id')
+            while parent_id and parent_id not in seen:
+                seen.add(parent_id)
+                if parent_id in direct:
+                    keep.add(line.get('id'))
+                    break
+                parent_id = (by_id.get(parent_id) or {}).get('parent_id')
+        return dict(payload, lines=[
+            line for line in lines if line.get('id') in keep])
+
+    @api.model
     def _bidi_safe(self, text, rtl=True):
         """Work around a wkhtmltopdf (Qt WebKit) bidi bug that prints the
         glyphs of some cells on top of each other.
 
-        A bold run that mixes Arabic with digits or Latin letters and ends
-        with an Arabic letter ("13900001 إيرادات مؤجلة", an account header
-        or total row) is laid out with its parts at the same position. A
-        trailing no-break space avoids it. It is added only for exactly
-        that case: pure Arabic text, or mixed text that already ends in a
-        digit or punctuation, renders correctly and a trailing character
-        would shift it.
+        Text that mixes Arabic with digits or Latin letters and ends with
+        an Arabic letter ("13900001 إيرادات مؤجلة", "إجمالي 13900001 ...",
+        account header / total rows) is either printed with its parts on
+        top of each other (bold) or shifted past the cell edge so its first
+        word is cut off. Wrapping it in right-to-left marks (zero width)
+        avoids both. Pure Arabic text, or mixed text that already ends in a
+        digit or punctuation, renders correctly and is left untouched.
         """
         if not rtl or not text or not isinstance(text, str):
             return text
         if (_ARABIC_CHAR_RE.match(text[-1])
                 and _LATIN_OR_DIGIT_RE.search(text)):
-            return text + ' '
+            return '\u200f' + text + '\u200f'
         return text
 
     @api.model

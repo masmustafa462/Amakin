@@ -516,10 +516,19 @@ export class EhDynamicReportViewer extends Component {
         // every lazy account the user has opened. Collapsed accounts are
         // left out, so they print collapsed exactly as on screen.
         const expanded = new Set(this.state.expandedLines);
+        // An active search shows every matching row open (see visibleLines),
+        // so kept lazy rows whose items are loaded print open as well.
+        const keepIds = this.tableFilteredIds;
+        if (keepIds) {
+            for (const id of keepIds) {
+                expanded.add(id);
+            }
+        }
         const map = {};
         const lines = (this.state.payload && this.state.payload.lines) || [];
         for (const line of lines) {
             if (!line.lazy || !expanded.has(line.id)) continue;
+            if (keepIds && !keepIds.has(line.id)) continue;
             const entry = this.state.childLines[line.id];
             const loaded = entry && entry.lines ? entry.lines.length : 0;
             if (loaded > 0) {
@@ -535,6 +544,8 @@ export class EhDynamicReportViewer extends Component {
             const options = {
                 ...this.state.options,
                 pdf_expanded: this.pdfExpandedMap(),
+                // Only what the in-table search leaves on screen prints.
+                pdf_query: (this.state.tableQuery || "").trim(),
             };
             const action = await this.orm.call(
                 "eh.account.dynamic.report",

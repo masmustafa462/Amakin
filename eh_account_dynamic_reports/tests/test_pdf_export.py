@@ -152,6 +152,36 @@ class TestPdfRendering(EhAccountIntegrationTestCase):
         aml_positions = [i for i, k in enumerate(kinds) if k == 'aml']
         self.assertTrue(all(head < i < total for i in aml_positions))
 
+    def test_general_ledger_pdf_prints_only_filtered_rows(self):
+        # The in-table search box limits the printout to the matching
+        # account (header, opening, total), like on screen.
+        base = dict(self.options, lazy_expand=True)
+        all_lines = self._gl_rendered_lines(base)
+        cash_header = 'account-%s' % self.account_cash.id
+        name = next(l['name'] for l in all_lines if l['id'] == cash_header)
+        term = name.strip('\u200f \u00a0').split()[-1]
+        filtered = self._gl_rendered_lines(dict(base, pdf_query=term))
+        self.assertIn(cash_header, [l['id'] for l in filtered])
+        self.assertLessEqual(len(filtered), len(all_lines))
+        self.assertEqual(self._gl_rendered_lines(
+            dict(base, pdf_query='zzz-no-such-row')), [])
+
+    def test_apply_table_filter_keeps_matches_ancestors_and_children(self):
+        lines = [
+            {'id': 'a', 'name': 'Assets', 'parent_id': None},
+            {'id': 'b', 'name': 'Bank', 'parent_id': 'a'},
+            {'id': 'b1', 'name': 'Opening', 'parent_id': 'b'},
+            {'id': 'c', 'name': 'Cash', 'parent_id': 'a'},
+            {'id': 'x', 'name': 'Other', 'parent_id': None},
+        ]
+        helper = self.env[
+            'report.eh_account_dynamic_reports.report_dynamic_pdf_template']
+        out = helper._apply_table_filter({'lines': lines}, ' bank ')
+        self.assertEqual([l['id'] for l in out['lines']], ['a', 'b', 'b1'])
+        self.assertEqual(
+            helper._apply_table_filter({'lines': lines}, '')['lines'],
+            lines)
+
     def test_general_ledger_pdf_notes_partially_loaded_account(self):
         # Screen had loaded only the first item of an account with more:
         # print that one and a note row saying the list is partial.
@@ -376,10 +406,10 @@ class TestPdfFormattingHelpers(EhAccountIntegrationTestCase):
 
     def test_bidi_safe_pads_mixed_text_ending_in_arabic(self):
         # Digits/Latin + Arabic ending with an Arabic letter triggers the
-        # wkhtmltopdf overprint bug; a trailing no-break space avoids it.
-        for text in ('13900001 إيرادات مؤجلة', 'Total إجمالي'):
+        # wkhtmltopdf overprint / clipping bug; RTL marks avoid it.
+        for text in ('13900001 إيرادات مؤجلة', 'إجمالي 13900001 إيرادات'):
             self.assertEqual(
-                self.helper._bidi_safe(text), text + ' ')
+                self.helper._bidi_safe(text), '\u200f' + text + '\u200f')
 
     def test_bidi_safe_leaves_other_text_unchanged(self):
         for text in (
