@@ -27,12 +27,15 @@ the rest.
 """
 
 import base64
+import logging
 import re
 from datetime import datetime
 
 from odoo import _, api, models
 from odoo.exceptions import UserError
 from odoo.tools.misc import format_date, format_datetime
+
+_logger = logging.getLogger(__name__)
 
 
 _NUMERIC_FIGURE_TYPES = frozenset({
@@ -70,8 +73,16 @@ class EhDynamicReportPdf(models.AbstractModel):
         is_rtl = self._is_rtl()
         for doc in docs:
             payload = doc.render(options)
-            payload = self._splice_expanded_lines(
-                doc, payload, options, expanded)
+            try:
+                payload = self._splice_expanded_lines(
+                    doc, payload, options, expanded)
+            except Exception:
+                # Mirroring the screen is best effort: a failure while
+                # fetching an opened account's items must never block the
+                # printout, which then falls back to the collapsed rows.
+                _logger.exception(
+                    "PDF: could not add the opened accounts' journal items "
+                    "for report %s; printing them collapsed", doc.code)
             rendered.append({
                 'doc': doc,
                 'payload': payload,
