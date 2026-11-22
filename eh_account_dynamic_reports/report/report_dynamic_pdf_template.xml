@@ -36,43 +36,37 @@
                             <t t-set="title" t-value="r.get('doc').name"/>
                         </t>
 
-                        <div class="eh_pdf_meta">
-                            <t t-set="meta" t-value="r.get('payload').get('meta', {})"/>
-                            <t t-set="md" t-value="r.get('meta_display') or {}"/>
-                            <t t-if="meta.get('date_from') and meta.get('date_to')">
-                                <span class="eh_pdf_meta_field"><strong>Period:</strong>
-                                    <t t-out="md.get('period')"/>
-                                </span>
-                                <span class="eh_pdf_meta_sep">|</span>
-                            </t>
-                            <t t-elif="meta.get('date_to')">
-                                <span class="eh_pdf_meta_field"><strong>As at:</strong>
-                                    <t t-out="md.get('date_to')"/>
-                                </span>
-                                <span class="eh_pdf_meta_sep">|</span>
-                            </t>
-                            <span class="eh_pdf_meta_field"><strong>Posted only:</strong>
-                                <t t-out="md.get('posted_only')"/>
-                            </span>
-                            <t t-set="curr" t-value="r.get('payload').get('currency') or {}"/>
-                            <t t-if="curr">
-                                <span class="eh_pdf_meta_sep">|</span>
-                                <span class="eh_pdf_meta_field">
-                                    <strong>Currency:</strong>
-                                    <t t-if="curr.get('multi_currency')">Multi-currency</t>
-                                    <t t-else="">
-                                        <t t-out="curr.get('name', '')"/>
-                                        <t t-if="curr.get('symbol')">
-                                            (<t t-out="curr.get('symbol')"/>)
-                                        </t>
-                                    </t>
-                                </span>
-                            </t>
-                            <span class="eh_pdf_meta_sep">|</span>
-                            <span class="eh_pdf_meta_field"><strong>Generated:</strong>
-                                <t t-out="md.get('generated_at')"/>
-                            </span>
-                        </div>
+                        <!-- Report conditions: one bordered cell per condition
+                             (label above, value below) so Arabic labels and
+                             Latin / numeric values never share a bidi run. -->
+                        <t t-set="meta" t-value="r.get('payload').get('meta', {})"/>
+                        <t t-set="md" t-value="r.get('meta_display') or {}"/>
+                        <t t-set="curr" t-value="r.get('payload').get('currency') or {}"/>
+                        <table class="eh_pdf_meta_grid">
+                            <tr>
+                                <t t-if="meta.get('date_from') and meta.get('date_to')">
+                                    <td><div class="eh_pdf_meta_label">From:</div>
+                                        <div class="eh_pdf_meta_value"><t t-out="md.get('date_from')"/></div></td>
+                                    <td><div class="eh_pdf_meta_label">To:</div>
+                                        <div class="eh_pdf_meta_value"><t t-out="md.get('date_to')"/></div></td>
+                                </t>
+                                <t t-elif="meta.get('date_to')">
+                                    <td><div class="eh_pdf_meta_label">As at:</div>
+                                        <div class="eh_pdf_meta_value"><t t-out="md.get('date_to')"/></div></td>
+                                </t>
+                                <td><div class="eh_pdf_meta_label">Posted only:</div>
+                                    <div class="eh_pdf_meta_value"><t t-out="md.get('posted_only')"/></div></td>
+                                <t t-if="curr">
+                                    <td><div class="eh_pdf_meta_label">Currency:</div>
+                                        <div class="eh_pdf_meta_value">
+                                            <t t-if="curr.get('multi_currency')">Multi-currency</t>
+                                            <t t-else=""><t t-out="curr.get('name', '')"/><t t-if="curr.get('symbol')"> (<t t-out="curr.get('symbol')"/>)</t></t>
+                                        </div></td>
+                                </t>
+                                <td><div class="eh_pdf_meta_label">Generated:</div>
+                                    <div class="eh_pdf_meta_value"><t t-out="md.get('generated_at')"/></div></td>
+                            </tr>
+                        </table>
 
                         <table class="eh_pdf_table eh_pdf_table_fixed">
                             <colgroup>

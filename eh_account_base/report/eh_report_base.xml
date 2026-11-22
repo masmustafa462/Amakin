@@ -57,6 +57,19 @@
             .eh_pdf_meta strong { color: #1a2332; font-weight: 600; }
             .eh_pdf_meta span { margin-right: 14pt; }
 
+            /* Report conditions grid: one bordered cell per condition. */
+            .eh_pdf_meta_grid { border-collapse: separate; border-spacing: 4pt 0; margin: 0 -4pt 12pt -4pt; }
+            .eh_pdf_meta_grid td {
+                border: 0.5pt solid #adb5bd;
+                background: #f4f6f8;
+                padding: 5pt 18pt 5pt 18pt;
+                vertical-align: top;
+                white-space: nowrap;
+            }
+            .eh_pdf_meta_label { font-size: 10pt; padding: 0 0 1pt 8pt; color: #6c757d; text-transform: none; letter-spacing: 0; }
+            .eh_pdf_meta_value { font-size: 11pt; color: #1a2332; font-weight: 700; }
+            .eh_pdf_rtl .eh_pdf_meta_value { direction: ltr; text-align: right; }
+
             .eh_pdf_table {
                 width: 100%;
                 border-collapse: collapse;

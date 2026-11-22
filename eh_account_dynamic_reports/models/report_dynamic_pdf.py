@@ -299,6 +299,7 @@ class EhDynamicReportPdf(models.AbstractModel):
                        date_from=date_from, date_to=date_to)
         return {
             'period': period,
+            'date_from': date_from,
             'date_to': date_to,
             'posted_only': _("Yes") if meta.get('posted_only') else _("No"),
             'generated_at': self._format_generated_at(
