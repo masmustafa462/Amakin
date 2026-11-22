@@ -180,6 +180,22 @@
                         </select>
                     </label>
                 </t>
+                <label class="eh_dr_filter eh_dr_filter_partner" t-if="isPartnerStatement">
+                    <span>Customer / Vendor</span>
+                    <input type="search" class="eh_dr_filter_search"
+                           placeholder="Search customer or vendor"
+                           t-on-input="onStatementPartnerSearch"/>
+                    <select t-on-change="onStatementPartnerChange"
+                            t-att-value="(state.options.partner_ids || [])[0] || ''">
+                        <option value="">Select...</option>
+                        <t t-foreach="state.choices.partners" t-as="sp" t-key="sp.id">
+                            <option t-att-value="sp.id"
+                                    t-att-selected="(state.options.partner_ids || []).includes(sp.id)">
+                                <t t-out="sp.name"/>
+                            </option>
+                        </t>
+                    </select>
+                </label>
                 <label class="eh_dr_filter">
                     <span>Currency</span>
                     <select t-on-change="onCurrencyChange"

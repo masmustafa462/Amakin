@@ -869,6 +869,42 @@ export class EhDynamicReportViewer extends Component {
 
     // ---- aged-report config (WS2) ----
 
+    get isPartnerStatement() {
+        return this.reportCode === "partner_account_statement";
+    }
+
+    // Customer / vendor picked from the report-conditions bar (statement
+    // report). One partner at a time; the advanced Partners filter still
+    // allows several.
+    onStatementPartnerChange(event) {
+        const id = parseInt(event.target.value, 10);
+        this.state.options.partner_ids = Number.isFinite(id) ? [id] : [];
+        this.refresh();
+    }
+
+    onStatementPartnerSearch(event) {
+        const term = (event.target.value || "").trim();
+        clearTimeout(this._partnerSearchTimer);
+        this._partnerSearchTimer = setTimeout(async () => {
+            const selected = this.state.options.partner_ids || [];
+            const domain = [
+                "|", ["customer_rank", ">", 0], ["supplier_rank", ">", 0],
+            ];
+            if (term) {
+                domain.unshift(["name", "ilike", term]);
+            }
+            const found = await this.tryFetch(
+                "res.partner", domain, ["id", "name"],
+                { limit: 50, order: "name" },
+            );
+            const keep = (this.state.choices.partners || []).filter(
+                (p) => selected.includes(p.id));
+            const seen = new Set(keep.map((p) => p.id));
+            this.state.choices.partners = keep.concat(
+                (found || []).filter((p) => !seen.has(p.id)));
+        }, 250);
+    }
+
     get isAged() {
         return this.reportCode === "aged_receivable"
             || this.reportCode === "aged_payable";

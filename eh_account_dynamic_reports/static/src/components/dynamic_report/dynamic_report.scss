@@ -750,3 +750,9 @@
         }
     }
 }
+
+// Statement report: customer / vendor picker in the conditions bar.
+.eh_dr_filter_partner {
+    min-width: 240px;
+    select, .eh_dr_filter_search { width: 100%; }
+}
