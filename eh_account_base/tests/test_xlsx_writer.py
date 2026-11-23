@@ -200,3 +200,48 @@ class TestXlsxWriterShape(EhAccountUnitTestCase):
             if ws.cell(row=r, column=1).value == text:
                 return r
         return None
+
+
+@tagged('eh_account_base', 'unit')
+class TestXlsxConditionsAndLayout(EhAccountUnitTestCase):
+    """Conditions block, real dates, row styling and RTL sheet."""
+
+    def _wb(self, **kw):
+        cols = [
+            {'expression_label': 'description', 'name': 'Description',
+             'figure_type': 'string'},
+            {'expression_label': 'date', 'name': 'Date',
+             'figure_type': 'string'},
+            {'expression_label': 'debit', 'name': 'Debit',
+             'figure_type': 'monetary'},
+        ]
+        payload = {
+            'columns': cols,
+            'lines': [
+                {'id': 'h', 'name': 'Header', 'level': 0,
+                 'meta': {'kind': 'account_header'},
+                 'columns': [{'value': ''}, {'value': ''}]},
+                {'id': 'a', 'name': 'Item', 'level': 1,
+                 'meta': {'kind': 'aml'},
+                 'columns': [{'value': '2026-06-15'}, {'value': 5.0}]},
+            ],
+            'meta': {'date_from': '2026-01-01', 'date_to': '2026-12-31',
+                     'posted_only': True, 'partner_names': 'Acme'},
+            'generated_at': '2026-11-23T07:00:00',
+        }
+        content = XlsxReportWriter('R', **kw).write_payload(payload)
+        return load_workbook(io.BytesIO(content)).active
+
+    def test_conditions_block_and_rtl(self):
+        ws = self._wb(labels={'from': 'From', 'to': 'To', 'yes': 'Yes'},
+                      rtl=True)
+        self.assertTrue(ws.sheet_view.rightToLeft)
+        captions = [c.value for c in ws[2] if c.value]
+        self.assertEqual(captions[:3], ['From', 'To', 'Partner'])
+        self.assertIn('Acme', [c.value for c in ws[3]])
+
+    def test_dates_are_real_dates(self):
+        ws = self._wb(labels={})
+        found = [c.value for row in ws.iter_rows() for c in row
+                 if hasattr(c.value, 'year')]
+        self.assertTrue(found)

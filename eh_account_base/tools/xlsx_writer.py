@@ -47,7 +47,9 @@ the full Odoo registry. openpyxl is the only external dependency, and it is
 already a standard Odoo requirement.
 """
 
+import datetime
 import io
+import re
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
@@ -62,6 +64,8 @@ _FORMAT_FLOAT = '#,##0.0000'
 _FORMAT_PERCENT = '0.00%'
 _FORMAT_DATE = 'yyyy-mm-dd'
 _FORMAT_DATETIME = 'yyyy-mm-dd hh:mm:ss'
+
+_ISO_DATE_RE = re.compile(r'^\d{4}-\d{2}-\d{2}$')
 
 _NUMERIC_FIGURE_TYPES = frozenset({'monetary', 'integer', 'float', 'percentage'})
 
@@ -87,7 +91,28 @@ class XlsxReportWriter:
     )
     TOP_BORDER = Border(top=Side(border_style='thin', color='000000'))
 
-    def __init__(self, report_name, sheet_name='Report'):
+    # Row styling by line meta.kind (General Ledger / statement layout).
+    _KIND_FILL = {
+        'account_header': 'E8EEF4', 'partner_header': 'E8EEF4',
+        'account_total': 'F0F0F0', 'partner_total': 'F0F0F0',
+    }
+    _KIND_BOLD = frozenset({
+        'account_header', 'partner_header', 'account_total', 'partner_total',
+    })
+    _WRAP_LABELS = frozenset({'description', 'label', 'partner', 'move'})
+    _WIDTH_BY_LABEL = {
+        'description': 38, 'date': 12, 'journal': 14, 'move': 18,
+        'partner': 24, 'label': 34, 'foreign': 20,
+    }
+
+    def __init__(self, report_name, sheet_name='Report', labels=None,
+                 rtl=False):
+        # `labels` (optional) carries translated captions for the
+        # conditions block: from, to, as_at, posted_only, currency,
+        # multi_currency, partner, generated, yes, no. Without it the
+        # legacy one-line English metadata is written.
+        self.labels = labels or None
+        self.rtl = bool(rtl)
         self.report_name = report_name or "Report"
         # Excel imposes a 31 character maximum on sheet names.
         self.sheet_name = (sheet_name or "Report")[:31]
@@ -107,12 +132,18 @@ class XlsxReportWriter:
         generated_at = payload.get('generated_at') or ''
         self._currency = payload.get('currency') or None
 
+        if self.rtl:
+            self.ws.sheet_view.rightToLeft = True
         self._write_title()
-        self._write_meta(meta, generated_at)
+        if self.labels:
+            self._write_conditions(meta, generated_at)
+        else:
+            self._write_meta(meta, generated_at)
         self._write_blank_row()
 
         columns = payload.get('columns') or []
         self._write_column_headers(columns)
+        self.ws.freeze_panes = self.ws.cell(row=self._row, column=2)
         for line in (payload.get('lines') or []):
             self._write_line(line, columns)
         if payload.get('totals'):
@@ -179,6 +210,58 @@ class XlsxReportWriter:
             ).font = self.META_FONT
             self._row += 1
 
+    def _write_conditions(self, meta, generated_at):
+        """Report conditions as labelled cells (caption above, value below),
+        the same set the PDF shows: period, partner, posted only, currency
+        and generation time."""
+        L = self.labels
+        items = []
+        if meta.get('date_from') and meta.get('date_to'):
+            items.append((L.get('from', 'From'),
+                          self._as_date(meta['date_from'])))
+            items.append((L.get('to', 'To'), self._as_date(meta['date_to'])))
+        elif meta.get('date_to'):
+            items.append((L.get('as_at', 'As at'),
+                          self._as_date(meta['date_to'])))
+        if meta.get('partner_names'):
+            items.append((L.get('partner', 'Partner'), meta['partner_names']))
+        if 'posted_only' in meta:
+            items.append((L.get('posted_only', 'Posted only'),
+                          L.get('yes', 'Yes') if meta['posted_only']
+                          else L.get('no', 'No')))
+        if self._currency:
+            if self._currency.get('multi_currency'):
+                cur = L.get('multi_currency', 'Multi-currency')
+            else:
+                sym = self._currency.get('symbol') or ''
+                cur = "%s%s" % (self._currency.get('name') or '',
+                                " (%s)" % sym if sym else '')
+            if cur:
+                items.append((L.get('currency', 'Currency'), cur))
+        if generated_at:
+            items.append((L.get('generated', 'Generated'),
+                          str(generated_at).replace('T', ' ')[:16]))
+        for col, (caption, value) in enumerate(items, start=1):
+            cap = self.ws.cell(row=self._row, column=col, value=caption)
+            cap.font = self.META_FONT
+            cap.fill = self.HEADER_FILL
+            val = self.ws.cell(row=self._row + 1, column=col, value=value)
+            val.font = self.HEADER_FONT
+            val.alignment = Alignment(horizontal='left')
+            if isinstance(value, datetime.date):
+                val.number_format = _FORMAT_DATE
+        if items:
+            self._row += 2
+
+    @staticmethod
+    def _as_date(value):
+        if isinstance(value, str) and _ISO_DATE_RE.match(value):
+            try:
+                return datetime.date.fromisoformat(value)
+            except ValueError:
+                return value
+        return value
+
     def _write_blank_row(self):
         self._row += 1
 
@@ -200,25 +283,48 @@ class XlsxReportWriter:
 
     def _write_line(self, line, columns):
         ws = self.ws
+        kind = (line.get('meta') or {}).get('kind', '')
+        bold = kind in self._KIND_BOLD
+        fill = self._KIND_FILL.get(kind)
+        muted = kind in ('load_more', 'notice', 'opening_balance')
         # Column 1: line name. Indent if this is a sub line.
         name_cell = ws.cell(
             row=self._row, column=1, value=line.get('name', ''),
         )
-        name_cell.font = (
-            self.TOTAL_FONT if line.get('level', 1) == 0 else self.DEFAULT_FONT
-        )
+        if bold or line.get('level', 1) == 0:
+            name_cell.font = self.TOTAL_FONT
+        elif muted:
+            name_cell.font = Font(name='Arial', size=10, italic=True,
+                                  color='555555')
+        else:
+            name_cell.font = self.DEFAULT_FONT
         level = max(int(line.get('level', 1)) - 1, 0)
-        if level:
-            name_cell.alignment = Alignment(indent=level)
+        name_cell.alignment = Alignment(
+            indent=level, wrap_text=True, vertical='top')
 
         # Subsequent columns: line.columns[i] -> sheet column i + 2.
         for i, line_col in enumerate(line.get('columns') or []):
             sheet_col = i + 2
             col_def = columns[i + 1] if i + 1 < len(columns) else {}
             value = line_col.get('value')
+            label = col_def.get('expression_label')
+            if label == 'date' or col_def.get('figure_type') == 'date':
+                value = self._as_date(value)
             cell = ws.cell(row=self._row, column=sheet_col, value=value)
-            cell.font = self.DEFAULT_FONT
+            cell.font = self.TOTAL_FONT if bold else self.DEFAULT_FONT
             self._apply_figure_type(cell, col_def.get('figure_type', 'string'))
+            if isinstance(value, datetime.date):
+                cell.number_format = _FORMAT_DATE
+                cell.alignment = Alignment(horizontal='center')
+            elif label in self._WRAP_LABELS:
+                cell.alignment = Alignment(wrap_text=True, vertical='top')
+        if fill:
+            for col in range(1, max(len(columns), 1) + 1):
+                ws.cell(row=self._row, column=col).fill = PatternFill(
+                    start_color=fill, end_color=fill, fill_type='solid')
+        if kind in ('account_total', 'partner_total'):
+            for col in range(1, max(len(columns), 1) + 1):
+                ws.cell(row=self._row, column=col).border = self.TOP_BORDER
 
         self._row += 1
 
@@ -292,10 +398,14 @@ class XlsxReportWriter:
     def _set_column_widths(self, columns):
         ws = self.ws
         # Name column gets extra width.
-        ws.column_dimensions[get_column_letter(1)].width = 35
+        first = (columns[0] if columns else {}).get('expression_label')
+        ws.column_dimensions[get_column_letter(1)].width = (
+            self._WIDTH_BY_LABEL.get(first, 35))
         for i, col_def in enumerate(columns[1:], start=2):
             figure_type = col_def.get('figure_type', 'string')
-            width = self._width_for(figure_type)
+            width = self._WIDTH_BY_LABEL.get(
+                col_def.get('expression_label')) or self._width_for(
+                figure_type)
             ws.column_dimensions[get_column_letter(i)].width = width
 
     @staticmethod

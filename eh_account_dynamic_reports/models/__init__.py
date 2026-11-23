@@ -16,3 +16,4 @@ from . import partner_statement_action
 from . import analytic_balance
 from . import noncash_transaction
 from . import report_dynamic_pdf
+from . import dynamic_report_export

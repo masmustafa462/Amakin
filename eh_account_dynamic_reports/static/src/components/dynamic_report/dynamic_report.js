@@ -503,7 +503,13 @@ export class EhDynamicReportViewer extends Component {
             const action = await this.orm.call(
                 "eh.account.dynamic.report",
                 "export_xlsx_attachment",
-                [[this.state.reportId], this.state.options],
+                // Same as the PDF: the workbook mirrors what the screen
+                // shows (opened accounts, active in-table search).
+                [[this.state.reportId], {
+                    ...this.state.options,
+                    pdf_expanded: this.pdfExpandedMap(),
+                    pdf_query: (this.state.tableQuery || "").trim(),
+                }],
             );
             await this.action.doAction(action);
         } catch (exc) {
