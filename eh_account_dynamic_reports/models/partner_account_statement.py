@@ -46,10 +46,10 @@ def _normalize(text):
 class EhPartnerAccountStatementHandler(models.AbstractModel):
     _name = 'eh.account.dynamic.report.handler.partner_account_statement'
     _inherit = 'eh.account.dynamic.report.handler.general_ledger'
-    _description = "Customer / vendor account statement handler"
+    _description = "Account statement handler"
 
     REPORT_CODE = 'partner_account_statement'
-    REPORT_NAME = _lt("Customer / Vendor Account Statement")
+    REPORT_NAME = _lt("Account Statement")
 
     # ---- scope ----
 

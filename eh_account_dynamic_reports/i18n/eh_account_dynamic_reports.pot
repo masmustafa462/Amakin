@@ -1968,7 +1968,7 @@ msgstr ""
 #: model:eh.account.dynamic.report,name:eh_account_dynamic_reports.report_partner_account_statement
 #: model:ir.actions.client,name:eh_account_dynamic_reports.action_open_partner_account_statement_viewer
 #: model:ir.ui.menu,name:eh_account_dynamic_reports.menu_partner_account_statement
-msgid "Customer / Vendor Account Statement"
+msgid "Account Statement"
 msgstr ""
 
 #. module: eh_account_dynamic_reports

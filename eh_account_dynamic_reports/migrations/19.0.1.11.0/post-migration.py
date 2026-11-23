@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
-"""Restore the statement report name "Customer / Vendor Account Statement"
-(كشف حساب عميل / مورد) after it was briefly renamed to "Account Statement"."""
+"""Name the statement report "Account Statement" / "كشف حساب" (report,
+client action and menu). Stored Arabic translations survive a plain upgrade,
+so both languages are written explicitly."""
 
 from odoo import SUPERUSER_ID, api
 
@@ -18,9 +19,7 @@ def migrate(cr, version):
         record = env.ref(xmlid, raise_if_not_found=False)
         if not record:
             continue
-        record.with_context(lang='en_US').write(
-            {'name': 'Customer / Vendor Account Statement'})
+        record.with_context(lang='en_US').write({'name': 'Account Statement'})
         for lang in langs:
             if lang.startswith('ar'):
-                record.with_context(lang=lang).write(
-                    {'name': 'كشف حساب عميل / مورد'})
+                record.with_context(lang=lang).write({'name': 'كشف حساب'})
