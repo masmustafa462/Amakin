@@ -385,13 +385,53 @@ export class EhDynamicReportViewer extends Component {
 
     async searchAccounts(rawTerm) {
         const term = (rawTerm || "").trim();
-        const domain = term
-            ? ["|", ["code", "ilike", term], ["name", "ilike", term]]
-            : [];
-        const found = await this.tryFetch(
-            "account.account", domain, ["id", "code", "name"],
-            { limit: 200, order: "code" },
-        );
+        // Every word must match the code or the name (so "rehab factory"
+        // finds "Factory ... rehab" whatever the word order). Errors are
+        // surfaced instead of silently showing an empty list.
+        const domain = [];
+        for (const word of term.split(/\s+/).filter(Boolean)) {
+            domain.push("|", ["code", "ilike", word], ["name", "ilike", word]);
+        }
+        const fields = ["id", "code", "name"];
+        const opts = { limit: 200, order: "code" };
+        let found = [];
+        try {
+            found = await this.orm.searchRead(
+                "account.account", domain, fields, opts);
+        } catch (e1) {
+            // Fall back to the standard name search (code + name).
+            try {
+                const hits = await this.orm.call(
+                    "account.account", "name_search", [],
+                    { name: term, limit: 200 });
+                const ids = (hits || []).map((h) => h[0]);
+                found = ids.length
+                    ? await this.orm.searchRead(
+                        "account.account", [["id", "in", ids]], fields, opts)
+                    : [];
+            } catch (e2) {
+                this.notification.add(
+                    (e2 && e2.message) || String(e2), { type: "danger" });
+            }
+        }
+        if (term && !found.length) {
+            // Arabic spelling variants (أ إ آ vs ا, ة vs ه, ى vs ي, tashkeel)
+            // defeat a plain ilike; compare normalised text on the client.
+            const norm = (t) => String(t || "")
+                .replace(/[\u064B-\u0652\u0640]/g, "")
+                .replace(/[\u0623\u0625\u0622]/g, "\u0627")
+                .replace(/\u0629/g, "\u0647")
+                .replace(/\u0649/g, "\u064A")
+                .toLowerCase();
+            const words = norm(term).split(/\s+/).filter(Boolean);
+            const all = await this.tryFetch(
+                "account.account", [], fields,
+                { limit: 3000, order: "code" });
+            found = all.filter((a) => {
+                const hay = norm(a.code + " " + a.name);
+                return words.every((w) => hay.includes(w));
+            }).slice(0, 200);
+        }
         // Keep already-selected accounts in the option list so picking a
         // further match does not drop earlier selections (the multi-select
         // reports only its rendered-and-selected options) and so their
