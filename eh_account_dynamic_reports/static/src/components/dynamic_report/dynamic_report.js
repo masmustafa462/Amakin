@@ -900,6 +900,35 @@ export class EhDynamicReportViewer extends Component {
         }
     }
 
+    // Account condition of the statement: one account, found by number or
+    // any part of the name (server-side search).
+    onStatementAccountChange(event) {
+        const id = parseInt(event.target.value, 10);
+        this.state.options.account_ids = Number.isFinite(id) ? [id] : [];
+        this.refresh();
+    }
+
+    onStatementAccountSearch(event) {
+        const term = (event.target.value || "").trim();
+        clearTimeout(this._stmtAccountTimer);
+        this._stmtAccountTimer = setTimeout(async () => {
+            try {
+                const found = await this.orm.call(
+                    "eh.account.dynamic.report.handler.partner_account_statement",
+                    "statement_account_choices", [term, 200]);
+                const selected = this.state.options.account_ids || [];
+                const keep = (this.state.choices.accounts || []).filter(
+                    (a) => selected.includes(a.id));
+                const seen = new Set(keep.map((a) => a.id));
+                this.state.choices.accounts = keep.concat(
+                    (found || []).filter((a) => !seen.has(a.id)));
+            } catch (e) {
+                this.notification.add(
+                    (e && e.message) || String(e), { type: "danger" });
+            }
+        }, 250);
+    }
+
     onStatementPartnerSearch(event) {
         const term = (event.target.value || "").trim();
         clearTimeout(this._partnerSearchTimer);

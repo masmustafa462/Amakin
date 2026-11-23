@@ -181,7 +181,23 @@
                     </label>
                 </t>
                 <label class="eh_dr_filter eh_dr_filter_partner" t-if="isPartnerStatement">
-                    <span>Customer / Vendor</span>
+                    <span>Account</span>
+                    <input type="search" class="eh_dr_filter_search"
+                           placeholder="Search account number or name"
+                           t-on-input="onStatementAccountSearch"/>
+                    <select t-on-change="onStatementAccountChange"
+                            t-att-value="(state.options.account_ids || [])[0] || ''">
+                        <option value="">All receivable / payable accounts</option>
+                        <t t-foreach="state.choices.accounts" t-as="sa" t-key="sa.id">
+                            <option t-att-value="sa.id"
+                                    t-att-selected="(state.options.account_ids || []).includes(sa.id)">
+                                <t t-out="sa.code"/> <t t-out="sa.name"/>
+                            </option>
+                        </t>
+                    </select>
+                </label>
+                <label class="eh_dr_filter eh_dr_filter_partner" t-if="isPartnerStatement">
+                    <span>Customer / Vendor (optional)</span>
                     <input type="search" class="eh_dr_filter_search"
                            placeholder="Search customer or vendor"
                            t-on-input="onStatementPartnerSearch"/>

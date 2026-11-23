@@ -40,7 +40,7 @@ class TestPartnerAccountStatement(EhAccountIntegrationTestCase):
             'posted_only': True,
         }
 
-    def test_without_partner_returns_instruction_row(self):
+    def test_without_partner_or_account_returns_instruction_row(self):
         result = self.handler.compute(self.options)
         kinds = [(l.get('meta') or {}).get('kind') for l in result['lines']]
         self.assertEqual(kinds, ['notice'])
@@ -74,3 +74,28 @@ class TestPartnerAccountStatement(EhAccountIntegrationTestCase):
         self.assertNotIn(
             idle.id,
             [c['id'] for c in self.handler.statement_partner_choices()])
+
+    def test_account_only_statement_lists_all_partners_of_account(self):
+        result = self.handler.compute(
+            dict(self.options, account_ids=[self.account_receivable.id]))
+        entries = [l for l in result['lines']
+                   if (l.get('meta') or {}).get('kind') == 'aml']
+        self.assertEqual(len(entries), 2)
+        self.assertIn(self.account_receivable.code,
+                      result['meta']['account_names'])
+
+    def test_account_and_partner_statement_is_narrowed_to_partner(self):
+        result = self.handler.compute(dict(
+            self.options, account_ids=[self.account_receivable.id],
+            partner_ids=[self.partner_x.id]))
+        entries = [l for l in result['lines']
+                   if (l.get('meta') or {}).get('kind') == 'aml']
+        self.assertEqual(len(entries), 1)
+
+    def test_account_choices_search_by_code_or_part_of_name(self):
+        code = self.account_receivable.code
+        by_code = self.handler.statement_account_choices(code)
+        self.assertIn(self.account_receivable.id, [a['id'] for a in by_code])
+        word = (self.account_receivable.name or '').split()[0]
+        by_name = self.handler.statement_account_choices(word[:3])
+        self.assertIn(self.account_receivable.id, [a['id'] for a in by_name])

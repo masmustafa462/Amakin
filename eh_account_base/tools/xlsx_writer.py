@@ -223,6 +223,8 @@ class XlsxReportWriter:
         elif meta.get('date_to'):
             items.append((L.get('as_at', 'As at'),
                           self._as_date(meta['date_to'])))
+        if meta.get('account_names'):
+            items.append((L.get('account', 'Account'), meta['account_names']))
         if meta.get('partner_names'):
             items.append((L.get('partner', 'Partner'), meta['partner_names']))
         if 'posted_only' in meta:
