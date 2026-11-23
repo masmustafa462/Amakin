@@ -28,6 +28,7 @@
 import { Component, onWillStart, onMounted, useState, useRef } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
+import { _t } from "@web/core/l10n/translation";
 import { user } from "@web/core/user";
 import {
     todayStr,
@@ -1365,14 +1366,41 @@ export class EhDynamicReportViewer extends Component {
         ));
     }
 
-    onExpandAll() {
+    async onExpandAll() {
         if (!this.state.payload) return;
-        // Expand every group, but NEVER lazy leaves: expanding all lazy
-        // leaves would fire one fetch per account and fan out to every
-        // journal item (the §2 invariant). Lazy leaves stay collapsed and
-        // the user expands the ones they care about individually.
-        this.state.expandedLines = this.state.payload.lines
-            .filter((l) => l.unfoldable && !l.lazy).map((l) => l.id);
+        const lines = this.state.payload.lines;
+        // With an in-table search active, only the rows it leaves visible.
+        const keep = this.tableFilteredIds;
+        const inScope = (l) => !keep || keep.has(l.id);
+        const groups = lines.filter((l) => l.unfoldable && !l.lazy);
+        const lazy = lines.filter((l) => l.unfoldable && l.lazy && inScope(l));
+        // Lazy leaves (General Ledger accounts) each need a fetch for their
+        // journal items, so cap how many open at once to keep one click from
+        // fanning out to the whole chart of accounts; the rest stay collapsed
+        // and the user filters or opens them individually.
+        const MAX_LAZY = 100;
+        const toOpen = lazy.slice(0, MAX_LAZY);
+        const open = new Set(this.state.expandedLines);
+        for (const l of groups) open.add(l.id);
+        for (const l of toOpen) open.add(l.id);
+        this.state.expandedLines = [...open];
+        if (lazy.length > MAX_LAZY) {
+            this.notification.add(
+                _t("Expanded the first %(shown)s of %(total)s accounts; use the row filter to open the others.", {
+                    shown: MAX_LAZY, total: lazy.length,
+                }),
+                { type: "info" },
+            );
+        }
+        // Fetch the first page of each opened account, a few at a time.
+        const pending = toOpen.filter((l) => !this.state.childLines[l.id]);
+        const workers = Array.from({ length: Math.min(4, pending.length) }, async () => {
+            while (pending.length) {
+                const line = pending.shift();
+                await this.loadChildren(line, 0);
+            }
+        });
+        await Promise.all(workers);
     }
 
     onCollapseAll() {
