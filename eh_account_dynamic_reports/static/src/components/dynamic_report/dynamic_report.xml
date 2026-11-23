@@ -185,7 +185,8 @@
                     <input type="search" class="eh_dr_filter_search"
                            placeholder="Search code or name, e.g. 401005"
                            t-on-input="(e) => this.onAccountSearch(e)"/>
-                    <select t-on-change="onStatementAccountChange"
+                    <select size="6" class="eh_dr_statement_list"
+                            t-on-change="onStatementAccountChange"
                             t-att-value="(state.options.account_ids || [])[0] || ''">
                         <option value="">Select...</option>
                         <t t-foreach="state.choices.accounts" t-as="sa" t-key="sa.id">

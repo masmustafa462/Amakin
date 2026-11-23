@@ -756,3 +756,6 @@
     min-width: 240px;
     select, .eh_dr_filter_search { width: 100%; }
 }
+
+// Account statement picker: results stay visible as you type.
+.eh_dr_statement_list { height: auto; min-height: 7.5em; }
