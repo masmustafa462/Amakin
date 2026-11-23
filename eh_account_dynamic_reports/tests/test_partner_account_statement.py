@@ -5,8 +5,8 @@
 # Copyright (C) 2026 (https://www.erpheritage.com.au/)
 #
 ##############################################################################
-"""Customer / vendor account statement: General Ledger layout scoped to the
-partner chosen in the Partner filter, on receivable / payable accounts."""
+"""Account statement: General Ledger layout for the account(s) chosen in
+the Account condition."""
 
 from odoo import fields
 from odoo.tests import tagged
@@ -15,7 +15,7 @@ from odoo.addons.eh_account_base.tests.common import EhAccountIntegrationTestCas
 
 
 @tagged('eh_account_dynamic_reports', 'integration', 'post_install', '-at_install')
-class TestPartnerAccountStatement(EhAccountIntegrationTestCase):
+class TestAccountStatement(EhAccountIntegrationTestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -40,24 +40,22 @@ class TestPartnerAccountStatement(EhAccountIntegrationTestCase):
             'posted_only': True,
         }
 
-    def test_without_partner_returns_instruction_row(self):
+    def test_without_account_returns_instruction_row(self):
         result = self.handler.compute(self.options)
         kinds = [(l.get('meta') or {}).get('kind') for l in result['lines']]
         self.assertEqual(kinds, ['notice'])
 
-    def test_lists_only_selected_partner_on_partner_accounts(self):
+    def test_lists_only_selected_account(self):
         result = self.handler.compute(
-            dict(self.options, partner_ids=[self.partner_x.id]))
+            dict(self.options, account_ids=[self.account_receivable.id]))
+        headers = [l for l in result['lines']
+                   if (l.get('meta') or {}).get('kind') == 'account_header']
+        self.assertEqual(len(headers), 1)
+        self.assertIn(self.account_receivable.code,
+                      result['meta']['account_names'])
         entries = [l for l in result['lines']
                    if (l.get('meta') or {}).get('kind') == 'aml']
-        self.assertEqual(len(entries), 1)
-        cells = {c['expression_label']: c['value']
-                 for c in entries[0]['columns']}
-        self.assertEqual(cells['partner'], 'Stmt X')
-        accounts = {(l.get('meta') or {}).get('account_id')
-                    for l in result['lines']}
-        self.assertNotIn(self.account_revenue.id, accounts)
-        self.assertEqual(result['meta']['partner_names'], 'Stmt X')
+        self.assertEqual(len(entries), 2)
 
     def test_same_columns_as_general_ledger(self):
         gl = self.env['eh.account.dynamic.report.handler.general_ledger']

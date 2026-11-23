@@ -68,6 +68,7 @@ class EhDynamicReportExport(models.Model):
             'to': caption(_("To:")),
             'as_at': caption(_("As at:")),
             'partner': caption(_("Partner:")),
+            'account': caption(_("Account:")),
             'posted_only': caption(_("Posted only:")),
             'currency': caption(_("Currency:")),
             'generated': caption(_("Generated:")),

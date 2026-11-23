@@ -6,18 +6,17 @@
 #
 ##############################################################################
 """
-Customer / vendor account statement.
+Account statement (كشف حساب).
 
 The same report as the General Ledger (per account: opening balance, every
 journal item of the period with date, journal, entry, partner, label, debit,
 credit, running balance and amount in currency, then the account total),
-limited to ONE condition the user must set: the customer(s) or vendor(s)
-chosen in the Partner filter.
+limited to the account(s) the user must choose in the Account condition.
+Lazy expansion, running balance, paging, currency column and PDF / XLSX
+export are inherited from the General Ledger handler.
 
-Only the receivable and payable accounts are listed unless the user picks
-accounts explicitly, so the statement reads as the partner's account with the
-company. Everything else (lazy expansion, running balance, paging, currency
-column, PDF / XLSX export) is inherited from the General Ledger handler.
+(The technical code stays `partner_account_statement` so existing installs
+keep their report record and menu.)
 """
 
 from odoo import _, api, fields, models
@@ -25,64 +24,33 @@ from odoo.tools.translate import LazyTranslate
 
 _lt = LazyTranslate(__name__)
 
-_PARTNER_ACCOUNT_TYPES = ('asset_receivable', 'liability_payable')
-
 
 class EhPartnerAccountStatementHandler(models.AbstractModel):
     _name = 'eh.account.dynamic.report.handler.partner_account_statement'
     _inherit = 'eh.account.dynamic.report.handler.general_ledger'
-    _description = "Customer / vendor account statement handler"
+    _description = "Account statement handler"
 
     REPORT_CODE = 'partner_account_statement'
-    REPORT_NAME = _lt("Customer / Vendor Account Statement")
-
-    # ---- scope ----
+    REPORT_NAME = _lt("Account Statement")
 
     @api.model
-    def _statement_options(self, options):
-        """Options with the receivable / payable accounts applied when the
-        user did not pick accounts. Never mutates the caller's dict."""
-        scoped = dict(options or {})
-        if not scoped.get('account_ids'):
-            domain = [('account_type', 'in', _PARTNER_ACCOUNT_TYPES)]
-            company_ids = scoped.get('company_ids')
-            if company_ids:
-                domain.append(('company_ids', 'in', [
-                    int(c) for c in company_ids]))
-            scoped['account_ids'] = self.env['account.account'].search(
-                domain).ids or [0]
-        return scoped
-
-    @api.model
-    def _partner_names(self, options):
-        ids = [int(p) for p in (options.get('partner_ids') or [])]
+    def _account_names(self, options):
+        ids = [int(a) for a in (options.get('account_ids') or [])]
         if not ids:
             return ''
         return ', '.join(
-            self.env['res.partner'].browse(ids).exists().mapped('name'))
-
-    # ---- handler API ----
+            '%s %s' % (acc.code or '', acc.name or '')
+            for acc in self.env['account.account'].browse(ids).exists())
 
     @api.model
     def compute(self, options):
-        if not options.get('partner_ids'):
+        if not options.get('account_ids'):
             return self._empty_payload(options)
-        payload = super().compute(self._statement_options(options))
+        payload = super().compute(options)
         meta = payload.setdefault('meta', {})
         meta['report_code'] = self.REPORT_CODE
-        meta['partner_names'] = self._partner_names(options)
+        meta['account_names'] = self._account_names(options).strip()
         return payload
-
-    @api.model
-    def expand_account_line(self, options, line_id, offset=0, limit=None):
-        return super().expand_account_line(
-            self._statement_options(options), line_id,
-            offset=offset, limit=limit)
-
-    @api.model
-    def get_drilldown_action(self, options, line_id):
-        return super().get_drilldown_action(
-            self._statement_options(options), line_id)
 
     @api.model
     def _empty_payload(self, options):
@@ -95,8 +63,8 @@ class EhPartnerAccountStatementHandler(models.AbstractModel):
         notice = {
             'id': 'notice-select-partner',
             'name': _(
-                "Select a customer or vendor in the Partner filter to "
-                "show the account statement."),
+                "Select an account in the Account condition to show "
+                "the account statement."),
             'level': 0,
             'columns': [
                 {'expression_label': c['expression_label'], 'value': ''}
@@ -116,6 +84,6 @@ class EhPartnerAccountStatementHandler(models.AbstractModel):
                 'date_to': self._iso_date(date_to),
                 'company_ids': sorted(int(c) for c in company_ids),
                 'posted_only': bool(options.get('posted_only', True)),
-                'partner_names': '',
+                'account_names': '',
             },
         }
