@@ -79,7 +79,7 @@
             <field name="name">Account Statement</field>
             <field name="handler_model">eh.account.dynamic.report.handler.partner_account_statement</field>
             <field name="sequence">55</field>
-            <field name="description">General Ledger layout for a customer, a vendor or an account: opening balance, every journal item of the period (date, journal, entry, partner, label, debit, credit, running balance, amount in currency) and the account total, on the receivable and payable accounts. Requires choosing the customer or vendor in the Partner filter.</field>
+            <field name="description">General Ledger layout for a customer, a vendor or an account: opening balance, every journal item of the period (date, journal, entry, partner, label, debit, credit, running balance, amount in currency) and the account total. Requires choosing a customer / vendor, an account, or both, in the report conditions.</field>
         </record>
 
         <record id="report_aged_receivable" model="eh.account.dynamic.report">
