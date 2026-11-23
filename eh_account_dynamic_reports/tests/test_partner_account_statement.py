@@ -64,3 +64,13 @@ class TestPartnerAccountStatement(EhAccountIntegrationTestCase):
         self.assertEqual(
             [c['expression_label'] for c in self.handler._build_columns()],
             [c['expression_label'] for c in gl._build_columns()])
+
+    def test_partner_choices_lists_partners_with_receivable_activity(self):
+        names = {c['name'] for c in self.handler.statement_partner_choices()}
+        self.assertTrue({'Stmt X', 'Stmt Y'} <= names)
+        only_x = self.handler.statement_partner_choices('Stmt X')
+        self.assertEqual([c['name'] for c in only_x], ['Stmt X'])
+        idle = self.env['res.partner'].create({'name': 'Stmt Idle'})
+        self.assertNotIn(
+            idle.id,
+            [c['id'] for c in self.handler.statement_partner_choices()])

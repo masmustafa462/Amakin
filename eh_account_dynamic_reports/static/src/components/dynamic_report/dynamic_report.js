@@ -340,14 +340,14 @@ export class EhDynamicReportViewer extends Component {
         const [companies, journals, partners, accounts, plans, analyticAccounts, currencies] = await Promise.all([
             this.tryFetch("res.company", [], ["id", "name"], { limit: 50, order: "name" }),
             this.tryFetch("account.journal", [], ["id", "name", "code"], { limit: 200, order: "name" }),
-            this.tryFetch(
-                "res.partner",
-                this.reportCode === "partner_account_statement"
-                    ? this.statementPartnerDomain()
-                    : [["customer_rank", ">", 0], ["parent_id", "=", false]],
-                ["id", "name"],
-                { limit: this.reportCode === "partner_account_statement" ? 1000 : 100, order: "name" },
-            ),
+            this.reportCode === "partner_account_statement"
+                ? this.fetchStatementPartners("")
+                : this.tryFetch(
+                    "res.partner",
+                    [["customer_rank", ">", 0], ["parent_id", "=", false]],
+                    ["id", "name"],
+                    { limit: 100, order: "name" },
+                ),
             this.tryFetch("account.account", [], ["id", "code", "name"], { limit: 200, order: "code" }),
             this.tryFetch("account.analytic.plan", [], ["id", "name"], { limit: 50, order: "name" }),
             this.tryFetch("account.analytic.account", [], ["id", "name"], { limit: 100, order: "name" }),
@@ -887,11 +887,17 @@ export class EhDynamicReportViewer extends Component {
         this.refresh();
     }
 
-    // Any partner can have a statement (an unflagged partner, an employee,
-    // a "current account" holder...), so the picker is not limited to
-    // flagged customers / vendors: the search box reaches every partner.
-    statementPartnerDomain() {
-        return [];
+    // Partners with a receivable / payable transaction (server side).
+    async fetchStatementPartners(term) {
+        try {
+            return await this.orm.call(
+                "eh.account.dynamic.report.handler.partner_account_statement",
+                "statement_partner_choices", [term || "", 300]);
+        } catch (e) {
+            this.notification.add(
+                (e && e.message) || String(e), { type: "danger" });
+            return [];
+        }
     }
 
     onStatementPartnerSearch(event) {
@@ -899,14 +905,7 @@ export class EhDynamicReportViewer extends Component {
         clearTimeout(this._partnerSearchTimer);
         this._partnerSearchTimer = setTimeout(async () => {
             const selected = this.state.options.partner_ids || [];
-            const domain = this.statementPartnerDomain();
-            if (term) {
-                domain.unshift(["name", "ilike", term]);
-            }
-            const found = await this.tryFetch(
-                "res.partner", domain, ["id", "name"],
-                { limit: 50, order: "name" },
-            );
+            const found = await this.fetchStatementPartners(term);
             const keep = (this.state.choices.partners || []).filter(
                 (p) => selected.includes(p.id));
             const seen = new Set(keep.map((p) => p.id));

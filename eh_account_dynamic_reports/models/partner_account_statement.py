@@ -64,6 +64,26 @@ class EhPartnerAccountStatementHandler(models.AbstractModel):
     # ---- handler API ----
 
     @api.model
+    def statement_partner_choices(self, term='', limit=300):
+        """Partners that have at least one receivable / payable journal item
+        (customers, vendors and any other partner with a financial
+        transaction on those accounts), for the statement's partner picker.
+        `term` narrows by name; the result is [{'id', 'name'}] by name."""
+        domain = [
+            ('partner_id', '!=', False),
+            ('parent_state', '!=', 'cancel'),
+            ('account_id.account_type', 'in', _PARTNER_ACCOUNT_TYPES),
+        ]
+        term = (term or '').strip()
+        if term:
+            domain.append(('partner_id.name', 'ilike', term))
+        groups = self.env['account.move.line']._read_group(
+            domain, groupby=['partner_id'], order='partner_id',
+            limit=int(limit or 300))
+        return [{'id': partner.id, 'name': partner.display_name}
+                for (partner,) in groups if partner]
+
+    @api.model
     def compute(self, options):
         if not options.get('partner_ids'):
             return self._empty_payload(options)
