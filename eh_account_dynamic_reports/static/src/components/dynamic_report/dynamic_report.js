@@ -343,11 +343,10 @@ export class EhDynamicReportViewer extends Component {
             this.tryFetch(
                 "res.partner",
                 this.reportCode === "partner_account_statement"
-                    // Account statement: customers AND vendors.
-                    ? ["|", ["customer_rank", ">", 0], ["supplier_rank", ">", 0], ["parent_id", "=", false]]
+                    ? this.statementPartnerDomain()
                     : [["customer_rank", ">", 0], ["parent_id", "=", false]],
                 ["id", "name"],
-                { limit: 100, order: "name" },
+                { limit: this.reportCode === "partner_account_statement" ? 1000 : 100, order: "name" },
             ),
             this.tryFetch("account.account", [], ["id", "code", "name"], { limit: 200, order: "code" }),
             this.tryFetch("account.analytic.plan", [], ["id", "name"], { limit: 50, order: "name" }),
@@ -888,14 +887,23 @@ export class EhDynamicReportViewer extends Component {
         this.refresh();
     }
 
+    // Every partner that can have a receivable / payable statement: flagged
+    // customers and vendors, plus any partner that carries a receivable or
+    // payable balance (credit / debit) even when never flagged.
+    statementPartnerDomain() {
+        return [
+            "|", "|", "|",
+            ["customer_rank", ">", 0], ["supplier_rank", ">", 0],
+            ["credit", "!=", 0], ["debit", "!=", 0],
+        ];
+    }
+
     onStatementPartnerSearch(event) {
         const term = (event.target.value || "").trim();
         clearTimeout(this._partnerSearchTimer);
         this._partnerSearchTimer = setTimeout(async () => {
             const selected = this.state.options.partner_ids || [];
-            const domain = [
-                "|", ["customer_rank", ">", 0], ["supplier_rank", ">", 0],
-            ];
+            const domain = this.statementPartnerDomain();
             if (term) {
                 domain.unshift(["name", "ilike", term]);
             }
