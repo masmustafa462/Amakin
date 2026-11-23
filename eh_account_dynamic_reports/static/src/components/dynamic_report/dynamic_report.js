@@ -887,15 +887,11 @@ export class EhDynamicReportViewer extends Component {
         this.refresh();
     }
 
-    // Every partner that can have a receivable / payable statement: flagged
-    // customers and vendors, plus any partner that carries a receivable or
-    // payable balance (credit / debit) even when never flagged.
+    // Any partner can have a statement (an unflagged partner, an employee,
+    // a "current account" holder...), so the picker is not limited to
+    // flagged customers / vendors: the search box reaches every partner.
     statementPartnerDomain() {
-        return [
-            "|", "|", "|",
-            ["customer_rank", ">", 0], ["supplier_rank", ">", 0],
-            ["credit", "!=", 0], ["debit", "!=", 0],
-        ];
+        return [];
     }
 
     onStatementPartnerSearch(event) {
