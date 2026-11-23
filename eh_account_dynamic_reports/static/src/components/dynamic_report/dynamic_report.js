@@ -342,7 +342,10 @@ export class EhDynamicReportViewer extends Component {
             this.tryFetch("account.journal", [], ["id", "name", "code"], { limit: 200, order: "name" }),
             this.tryFetch(
                 "res.partner",
-                [["customer_rank", ">", 0], ["parent_id", "=", false]],
+                this.reportCode === "partner_account_statement"
+                    // Account statement: customers AND vendors.
+                    ? ["|", ["customer_rank", ">", 0], ["supplier_rank", ">", 0], ["parent_id", "=", false]]
+                    : [["customer_rank", ">", 0], ["parent_id", "=", false]],
                 ["id", "name"],
                 { limit: 100, order: "name" },
             ),
@@ -876,13 +879,36 @@ export class EhDynamicReportViewer extends Component {
         return this.reportCode === "partner_account_statement";
     }
 
-    // Account picked from the report-conditions bar (account statement
-    // report). One account at a time; the advanced Accounts filter still
+    // Customer / vendor picked from the report-conditions bar (statement
+    // report). One partner at a time; the advanced Partners filter still
     // allows several.
-    onStatementAccountChange(event) {
+    onStatementPartnerChange(event) {
         const id = parseInt(event.target.value, 10);
-        this.state.options.account_ids = Number.isFinite(id) ? [id] : [];
+        this.state.options.partner_ids = Number.isFinite(id) ? [id] : [];
         this.refresh();
+    }
+
+    onStatementPartnerSearch(event) {
+        const term = (event.target.value || "").trim();
+        clearTimeout(this._partnerSearchTimer);
+        this._partnerSearchTimer = setTimeout(async () => {
+            const selected = this.state.options.partner_ids || [];
+            const domain = [
+                "|", ["customer_rank", ">", 0], ["supplier_rank", ">", 0],
+            ];
+            if (term) {
+                domain.unshift(["name", "ilike", term]);
+            }
+            const found = await this.tryFetch(
+                "res.partner", domain, ["id", "name"],
+                { limit: 50, order: "name" },
+            );
+            const keep = (this.state.choices.partners || []).filter(
+                (p) => selected.includes(p.id));
+            const seen = new Set(keep.map((p) => p.id));
+            this.state.choices.partners = keep.concat(
+                (found || []).filter((p) => !seen.has(p.id)));
+        }, 250);
     }
 
     get isAged() {

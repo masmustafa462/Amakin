@@ -2036,19 +2036,25 @@ msgstr "إلى:"
 #: model:eh.account.dynamic.report,name:eh_account_dynamic_reports.report_partner_account_statement
 #: model:ir.actions.client,name:eh_account_dynamic_reports.action_open_partner_account_statement_viewer
 #: model:ir.ui.menu,name:eh_account_dynamic_reports.menu_partner_account_statement
-msgid "Account Statement"
-msgstr "كشف حساب"
+msgid "Customer / Vendor Account Statement"
+msgstr "كشف حساب عميل / مورد"
 
 #. module: eh_account_dynamic_reports
 #. odoo-python
 #: code:addons/eh_account_dynamic_reports/models/partner_account_statement.py:0
-msgid "Select an account in the Account condition to show the account statement."
-msgstr "اختر حسابًا من شرط الحساب لعرض كشف الحساب."
+msgid "Select a customer or vendor in the Partner filter to show the account statement."
+msgstr "اختر عميلًا أو موردًا من مرشّح الشريك لعرض كشف الحساب."
 
 #. module: eh_account_dynamic_reports
 #: model_terms:ir.ui.view,arch_db:eh_account_dynamic_reports.report_dynamic_pdf_template
 msgid "Partner:"
 msgstr "الشريك:"
+
+#. module: eh_account_dynamic_reports
+#. odoo-javascript
+#: code:addons/eh_account_dynamic_reports/static/src/components/dynamic_report/dynamic_report.xml:0
+msgid "Customer / Vendor"
+msgstr "العميل / المورد"
 
 #. module: eh_account_dynamic_reports
 #. odoo-javascript
@@ -2061,8 +2067,3 @@ msgstr "ابحث عن عميل أو مورد"
 #: code:addons/eh_account_dynamic_reports/static/src/components/dynamic_report/dynamic_report.xml:0
 msgid "Select..."
 msgstr "اختر..."
-
-#. module: eh_account_dynamic_reports
-#: model_terms:ir.ui.view,arch_db:eh_account_dynamic_reports.report_dynamic_pdf_template
-msgid "Account:"
-msgstr "الحساب:"

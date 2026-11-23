@@ -44,10 +44,6 @@
                         <t t-set="curr" t-value="r.get('payload').get('currency') or {}"/>
                         <table class="eh_pdf_meta_grid">
                             <tr>
-                                <t t-if="md.get('account_names')">
-                                    <td><div class="eh_pdf_meta_label">Account:</div>
-                                        <div class="eh_pdf_meta_value"><t t-out="md.get('account_names')"/></div></td>
-                                </t>
                                 <t t-if="md.get('partner_names')">
                                     <td><div class="eh_pdf_meta_label">Partner:</div>
                                         <div class="eh_pdf_meta_value"><t t-out="md.get('partner_names')"/></div></td>

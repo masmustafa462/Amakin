@@ -181,17 +181,17 @@
                     </label>
                 </t>
                 <label class="eh_dr_filter eh_dr_filter_partner" t-if="isPartnerStatement">
-                    <span>Account</span>
+                    <span>Customer / Vendor</span>
                     <input type="search" class="eh_dr_filter_search"
-                           placeholder="Search code or name, e.g. 401005"
-                           t-on-input="(e) => this.onAccountSearch(e)"/>
-                    <select t-on-change="onStatementAccountChange"
-                            t-att-value="(state.options.account_ids || [])[0] || ''">
+                           placeholder="Search customer or vendor"
+                           t-on-input="onStatementPartnerSearch"/>
+                    <select t-on-change="onStatementPartnerChange"
+                            t-att-value="(state.options.partner_ids || [])[0] || ''">
                         <option value="">Select...</option>
-                        <t t-foreach="state.choices.accounts" t-as="sa" t-key="sa.id">
-                            <option t-att-value="sa.id"
-                                    t-att-selected="(state.options.account_ids || []).includes(sa.id)">
-                                <t t-out="sa.code"/> <t t-out="sa.name"/>
+                        <t t-foreach="state.choices.partners" t-as="sp" t-key="sp.id">
+                            <option t-att-value="sp.id"
+                                    t-att-selected="(state.options.partner_ids || []).includes(sp.id)">
+                                <t t-out="sp.name"/>
                             </option>
                         </t>
                     </select>
