@@ -2094,3 +2094,9 @@ msgstr "العميل / المورد (اختياري)"
 #: code:addons/eh_account_dynamic_reports/models/partner_account_statement.py:0
 msgid "Select a customer / vendor or an account in the report conditions to show the account statement."
 msgstr "اختر عميلًا / موردًا أو حسابًا من شروط التقرير لعرض كشف الحساب."
+
+#. module: eh_account_dynamic_reports
+#. odoo-javascript
+#: code:addons/eh_account_dynamic_reports/static/src/components/dynamic_report/dynamic_report.js:0
+msgid "Expanded the first %(shown)s of %(total)s accounts; use the row filter to open the others."
+msgstr "تم فتح أول %(shown)s من %(total)s حسابًا؛ استخدم تصفية الصفوف لفتح الباقي."
